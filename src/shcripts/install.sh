@@ -1,36 +1,54 @@
 #!/usr/bin/env bash
 
 if [[ ! "$HOME" ]]; then
-	echo "no HOME varible set up"
+	printf "no HOME varible set up\n"
 	return 1
 fi
 
-DOTSYNC_SRC="$HOME/.config/dotSync/src"
-DOTSYNC_DOTFILES="$DOTSYNC_SRC/dotfiles"
+DOTSYNC_SRC="$HOME/.config/dync/src"
 
-configDotfiles="$DOTSYNC_DOTFILES/.config/"
-HOMEDotfiles="$DOTSYNC_SRC/.config"
+DOTFILES="$DOTSYNC_SRC/dotfiles"
+BACKUP="$DOTSYNC_SRC/backup"
 
 # CONFIG_TARGET="$HOME/.config/"
 # HOME_TARGET="$HOME"
 DEV_CONFIG_TARGET="$DOTSYNC_SRC/dev/.config"
-DEV_HOME_TARGET="$DOTSYNC_SRC/dev/"
+DEV_HOME_TARGET="$DOTSYNC_SRC/dev"
 
 . $DOTSYNC_SRC/shcripts/colors.sh
 
-# function backup() {
-#
-# }
-
-function removeDevFiles() {
-	cd "$DOTSYNC_SRC/dev/"
-	rm -rf *
+function backup() {
+	cd $DOTSYNC_SRC/dev
+	cp * $BACKUP
+	if [[ $? -gt 0 ]]; then
+		return 1
+	fi
+	cp -r .config $BACKUP
+	if [[ $? -eq 0 ]]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 function copyToConfig() {
-	cd "$DOTSYNC_DOTFILES/.config/"
-	cp * $DEV_CONFIG_TARGET
-	echo "copied $ESC$DOTSYNC_DOTFILES/.config to $DEV_CONFIG_TARGET"
+	cd $DOTFILES
+	rsync -a * $DEV_HOME_TARGET
 }
 
-copyToConfig
+cd $DOTSYNC_SRC
+
+if [[ $(ls -1a dev | wc -l) -gt 2 ]]; then
+	backup
+fi
+
+if [[ $? -eq 0 ]]; then
+	COLOR_DIR="${DIR}$BACKUP${NC}"
+	printf "Backup success.\nBackup location: $COLOR_DIR\n"
+	copyToConfig
+	wait 
+	printf "files copied\n"
+else
+	printf "\n$ERROR failed to backup files. aborting.\n\n"
+fi
+
