@@ -11,7 +11,7 @@ confirm() {
 		if [[ $loop_num -gt 0 ]]; then
 			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
 		fi
-		printf "\n%s" "Are you sure you want to dync your files? (Y/n): "
+		printf "${IMPORTANT}\n%s${NC} " " dync your files? (Y/n): "
 		read confirm
 		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 			return 0
@@ -47,26 +47,25 @@ backup() {
 	cd $DYNC/test_home
 
 	# if backup folder doesnt exist, create it
-	if [[ ! -d $BACKUP ]]; then
-		mkdir $BACKUP
-		COLOR_DIR="${DIR}$BACKUP ${NC}"
+	if [[ ! -d $BACKUPS ]]; then
+		mkdir $BACKUPS
+		COLOR_DIR="${DIR}$BACKUPS ${NC}"
 		printf "\n${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
 	fi
 
-	# get number of files in $BACKUP - 2 to not count .. .
-	BACKUP_NUM=$(($(ls -a $BACKUP | wc -l) - 2))
+	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
 	# date string format
 	#							24 hour time : seconds__month_date_year
 	BACKUP_DATETIME=$(date +"%R:%S__%m_%d_%y")
 	# backup name and location
 	BACKUP_NAME="${BACKUP_NUM}_${BACKUP_DATETIME}"
-	BACKUP_LOCATION="${BACKUP}/${BACKUP_NAME}"
+	BACKUP_LOCATION="${BACKUPS}/${BACKUP_NAME}"
 
 	mkdir $BACKUP_LOCATION
 	copyAllToTarget $BACKUP_LOCATION
 	if [[ $? -eq 0 ]]; then
 		COLOR_DIR="${DIR}$BACKUP_LOCATION ${NC}"
-		printf "\n${IMPORTANT} Backup Success @ $COLOR_DIR\n"
+		BACKUP_SUCCESS_MESSAGE=$(printf "\n${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
 		return 0
 	else
 		printf "\n$ERROR\n${IMPORTANT} failed to backup files. aborting. ${NC}\n\n"

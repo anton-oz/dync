@@ -9,7 +9,7 @@ fi
 DYNC="$HOME/.config/dync"
 
 DOTFILES="$DYNC/dotfiles"
-BACKUP="$DYNC/backup"
+BACKUPS="$DYNC/backups"
 SRC="$DYNC/src"
 
 # CONFIG_TARGET="$HOME/.config/"
@@ -17,6 +17,8 @@ SRC="$DYNC/src"
 DEV_CONFIG_TARGET="$DYNC/test_home/.config"
 DEV_HOME_TARGET="$DYNC/test_home"
 
+# TODO: be able to switch between
+# -q (quiet) and -v (verbose)
 RSYNCFLAGS="-var"
 
 # source colors and functions
@@ -38,10 +40,13 @@ fi
 
 cd $DYNC
 
+BACKUP_SUCCESS_MESSAGE=""
 if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
 	backup
 fi
 
 copyDotfiles
 wait
-printf "\n${SUCCESS}  dynced  ${NC}\n\n"
+printf "${BACKUP_SUCCESS_MESSAGE}\n"
+printf "${SUCCESS}  dynced  ${NC}\n\n"
+
