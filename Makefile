@@ -4,4 +4,7 @@ build:
 	./src/shcripts/dync.sh
 
 clean:
-	rm -rf src/backup
+	rm -rf backup
+
+cleantest:
+	rm -rf test_home/*

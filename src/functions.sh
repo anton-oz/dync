@@ -3,9 +3,13 @@
 confirm() {
 	confirm=""
 	loop_num=0
-	while [[ $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
+	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
+		if [[ "$loop_num" == 2 ]]; then
+			printf "\n${IMPORTANT} To skip this confirmation use dync -y ${NC}\n\n"
+			exit 0
+		fi
 		if [[ $loop_num -gt 0 ]]; then
-			printf "\nPlease enter Y or n to continue or exit dync\n"
+			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
 		fi
 		printf "\n%s" "Are you sure you want to dync your files? (Y/n): "
 		read confirm
@@ -19,15 +23,18 @@ confirm() {
 	done
 }
 
+# used for dyncing
 copyAllToTarget() {
 	if [[ -z $1 ]]; then
-		printf "\n$ERROR must give a target\n"
+		printf "\n$ERROR\n${IMPORTANT} must give a target ${NC}\n\n"
 		exit 1
 	elif [[ ! -d $1 ]]; then
-		printf "\n$ERROR target must be a directory\n"
+		printf "\n$ERROR\n${IMPORTANT} target must be a directory ${NC}\n\n"
+		printf "\ttarget = ${1}\n\n"
 		exit 1
 	fi
-	rsync -qar * .* $1
+	rsync $RSYNCFLAGS * .* $1
+	wait
 	if [[ $? -eq 0 ]]; then
 		return 0
 	else
@@ -36,7 +43,9 @@ copyAllToTarget() {
 }
 
 backup() {
-	cd $DYNC/dev
+	# NOTE: will be changing to $HOME at some point
+	cd $DYNC/test_home
+
 	# if backup folder doesnt exist, create it
 	if [[ ! -d $BACKUP ]]; then
 		mkdir $BACKUP
@@ -60,7 +69,7 @@ backup() {
 		printf "\n${IMPORTANT} Backup Success @ $COLOR_DIR\n"
 		return 0
 	else
-		printf "\n$ERROR failed to backup files. aborting.\n\n"
+		printf "\n$ERROR\n${IMPORTANT} failed to backup files. aborting. ${NC}\n\n"
 		exit 1
 	fi
 }
@@ -71,19 +80,26 @@ copyDotfiles() {
 }
 
 listFiles() {
-	printf "\n${IMPORTANT} Files currently in ${DIR}$DOTFILES ${NC}\n"
-	ls -1A --color=auto $DOTFILES
+	printf "\n${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n\n"
+	ls -A1 --color=auto $DOTFILES
 	printf "\n"
+	exit 0
 }
 
 addFile() {
+	shift
+	if [[ $# -eq 0 ]]; then
+		printf "\n$ERROR\n${IMPORTANT} add needs at least one file or directory to add ${NC}\n\n"
+		exit 1
+	fi
 	printf "\n"
 	for arg in $@
 	do
-		rsync -ar $arg $DOTFILES
+		rsync $RSYNCFLAGS $arg $DOTFILES
 		printf "$arg added to $DOTFILES\n"
 	done
 	printf "\n"
+	exit 0
 }
 
 watchDotfiles() {
