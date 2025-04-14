@@ -1,24 +1,18 @@
 # dync
-
 repo to sync all my dotfiles across different machines
 
 ## Installation
 
+move to `~/.config` and clone this repo.
 ```bash
 cd "$HOME/.config"
 git clone git@github.com:anton-oz/dync.git
 ```
-move to `~/.config` and clone this repo.
-```bash
-source "$HOME/.config/dync/src/shcripts/index.sh"
-```
-then add this line to the end of your shell config file
-
-example:
+depending on your shell enter this command and dync is installed!
 ```bash
 # bash
-echo source "$HOME/.config/dync/src/shcripts/index.sh" >> $HOME/.bashrc
+echo alias dync="$HOME/.config/dync/src/shcripts/dync.sh" >> $HOME/.bashrc
 
 # zsh
-echo source "$HOME/.config/dync/src/shcripts/index.sh" >> $HOME/.zshrc
+echo alias dync="$HOME/.config/dync/src/shcripts/dync.sh" >> $HOME/.zshrc
 ```
