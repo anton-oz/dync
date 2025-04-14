@@ -1,24 +1,26 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 if [[ ! "$HOME" ]]; then
 	printf "\nno HOME varible set up, aborting\n\n"
 	exit 1
 fi
 
-DOTSYNC_SRC="$HOME/.config/dync/src"
+# DYNC="$HOME/.config/dync/src"
+DYNC="$HOME/.config/dync"
 
-DOTFILES="$DOTSYNC_SRC/dotfiles"
-BACKUP="$DOTSYNC_SRC/backup"
-SHCRIPTS="$DOTSYNC_SRC/shcripts"
+DOTFILES="$DYNC/dotfiles"
+BACKUP="$DYNC/backup"
+SRC="$DYNC/src"
 
 # CONFIG_TARGET="$HOME/.config/"
 # HOME_TARGET="$HOME"
-DEV_CONFIG_TARGET="$DOTSYNC_SRC/dev/.config"
-DEV_HOME_TARGET="$DOTSYNC_SRC/dev"
+DEV_CONFIG_TARGET="$DYNC/dev/.config"
+DEV_HOME_TARGET="$DYNC/dev"
 
 # source colors and functions
-. $SHCRIPTS/colors.sh
-. $SHCRIPTS/functions.sh
+. $SRC/colors.sh
+. $SRC/functions.sh
+
 
 if [[ $1 == 'list' ]]; then
 	listFiles
@@ -40,7 +42,7 @@ if [[ $1 != "-y" ]]; then
 	confirm
 fi
 
-cd $DOTSYNC_SRC
+cd $DYNC
 
 if [[ $(ls -1a dev | wc -l) -gt 2 ]]; then
 	backup

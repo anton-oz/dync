@@ -1,3 +1,5 @@
+#!/bin/bash
+
 confirm() {
 	confirm=""
 	loop_num=0
@@ -34,7 +36,7 @@ copyAllToTarget() {
 }
 
 backup() {
-	cd $DOTSYNC_SRC/dev
+	cd $DYNC/dev
 	# if backup folder doesnt exist, create it
 	if [[ ! -d $BACKUP ]]; then
 		mkdir $BACKUP

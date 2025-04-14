@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 ESC="\033["
 NC="${ESC}0m"
