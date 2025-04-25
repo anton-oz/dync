@@ -1,7 +1,7 @@
 MAKEFLAGS=-s
 
 build:
-	./src/shcripts/dync.sh
+	./src/dync.sh
 
 clean:
 	rm -rf backup
