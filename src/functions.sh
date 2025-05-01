@@ -79,8 +79,13 @@ copyDotfiles() {
 }
 
 listFiles() {
-	printf "\n${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n\n"
-	ls -A1 --color=auto $DOTFILES
+	if [[ $# -gt 0 ]]; then
+		printf "$ERROR list takes no arguments\n"
+		exit 1
+	else
+		printf "\n${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n\n"
+		ls -A1 --color=auto $DOTFILES
+	fi
 	printf "\n"
 	exit 0
 }

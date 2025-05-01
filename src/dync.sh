@@ -5,8 +5,10 @@ if [[ ! "$HOME" ]]; then
 	exit 1
 fi
 
-# DYNC="$HOME/.config/dync/src"
-DYNC="$HOME/.config/dync"
+# ugly but gets the absolute path of wherever dync is located
+DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
+
+echo $DYNC
 
 DOTFILES="$DYNC/dotfiles"
 BACKUPS="$DYNC/backups"
@@ -27,7 +29,8 @@ RSYNCFLAGS="-var"
 
 
 if [[ $1 == 'list' ]]; then
-	listFiles
+	shift
+	listFiles $@
 fi
 
 if [[ $1 == 'add' ]]; then
