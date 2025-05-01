@@ -1,10 +1,10 @@
-MAKEFLAGS=-s
+# MAKEFLAGS=
 
 build:
 	./src/dync.sh
 
 clean:
-	rm -rf backup
+	rm -rf backups
 
 cleantest:
 	rm -rf test_home/*

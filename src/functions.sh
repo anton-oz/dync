@@ -1,7 +1,7 @@
 #!/bin/bash
 
-confirm() {
-	confirm=""
+confirmPrompt() {
+	local confirm=""
 	loop_num=0
 	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
 		if [[ "$loop_num" == 2 ]]; then
