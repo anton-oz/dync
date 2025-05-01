@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# idk if I want this anymore
 confirmPrompt() {
 	local confirm=""
 	loop_num=0
@@ -78,6 +79,7 @@ copyDotfiles() {
 }
 
 listFiles() {
+	shift
 	if [[ $# -gt 0 ]]; then
 		printf "$ERROR list takes no arguments\n"
 		exit 1
