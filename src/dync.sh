@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if [[ ! "$HOME" ]]; then
-	printf "\nno HOME varible set up, aborting\n\n"
+	printf "\nno HOME varible set up, aborting\n"
 	exit 1
 fi
 
@@ -62,10 +62,10 @@ if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
 fi
 
 copyDotfiles
-wait
+
 if $SILENT; then
 	exit 0
 fi
 printf "${BACKUP_SUCCESS_MESSAGE}\n"
-printf "${SUCCESS}  dynced  ${NC}\n\n"
+printf "${SUCCESS}  dynced  ${NC}\n"
 

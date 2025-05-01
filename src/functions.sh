@@ -11,12 +11,11 @@ confirmPrompt() {
 		if [[ $loop_num -gt 0 ]]; then
 			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
 		fi
-		printf "${IMPORTANT}\n%s${NC} " " dync your files? (Y/n): "
+		printf "${IMPORTANT}%s${NC} " " dync your files? (Y/n): "
 		read confirm
 		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
 			return 0
 		elif [[ $confirm == [nN] || $confirm == [nN][oO] || $confirm == [qQ] ]]; then
-			printf "\n"
 			exit 0
 		fi
 		loop_num=$(($loop_num + 1))
@@ -26,11 +25,11 @@ confirmPrompt() {
 # used for dyncing
 copyAllToTarget() {
 	if [[ -z $1 ]]; then
-		printf "\n$ERROR\n${IMPORTANT} must give a target ${NC}\n\n"
+		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
 		exit 1
 	elif [[ ! -d $1 ]]; then
-		printf "\n$ERROR\n${IMPORTANT} target must be a directory ${NC}\n\n"
-		printf "\ttarget = ${1}\n\n"
+		printf "$ERROR${IMPORTANT} target must be a directory ${NC}\n"
+		printf "\ttarget = ${1}\n"
 		exit 1
 	fi
 	rsync $RSYNCFLAGS * .* $1
@@ -50,7 +49,7 @@ backup() {
 	if [[ ! -d $BACKUPS ]]; then
 		mkdir $BACKUPS
 		COLOR_DIR="${DIR}$BACKUPS ${NC}"
-		printf "\n${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
+		printf "${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
 	fi
 
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
@@ -65,10 +64,10 @@ backup() {
 	copyAllToTarget $BACKUP_LOCATION
 	if [[ $? -eq 0 ]]; then
 		COLOR_DIR="${DIR}$BACKUP_LOCATION ${NC}"
-		BACKUP_SUCCESS_MESSAGE=$(printf "\n${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
+		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
 		return 0
 	else
-		printf "\n$ERROR\n${IMPORTANT} failed to backup files. aborting. ${NC}\n\n"
+		printf "$ERROR${IMPORTANT} failed to backup files. aborting. ${NC}\n"
 		exit 1
 	fi
 }
@@ -83,26 +82,23 @@ listFiles() {
 		printf "$ERROR list takes no arguments\n"
 		exit 1
 	else
-		printf "\n${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n\n"
+		printf "${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n"
 		ls -A1 --color=auto $DOTFILES
 	fi
-	printf "\n"
 	exit 0
 }
 
 addFile() {
 	shift
 	if [[ $# -eq 0 ]]; then
-		printf "\n$ERROR\n${IMPORTANT} add needs at least one file or directory to add ${NC}\n\n"
+		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
 		exit 1
 	fi
-	printf "\n"
 	for arg in $@
 	do
 		rsync $RSYNCFLAGS $arg $DOTFILES
 		printf "$arg added to $DOTFILES\n"
 	done
-	printf "\n"
 	exit 0
 }
 
