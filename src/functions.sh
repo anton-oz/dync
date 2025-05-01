@@ -1,5 +1,18 @@
 #!/bin/bash
 
+showHelp() {
+	printf "Usage: dync [flags] [command]\n"
+	printf "  options:\n"
+	printf "    -h,--help	show this help message\n"
+	printf "    -y		skip confirm prompt\n"
+	printf "    -v		verbose output\n"
+	printf "    -s		silence all output (does not silence errors)\n"
+	printf "  commands:\n"
+	printf "    add		add a file to dync\n"
+	printf "    list	list files currently in dync\n"
+	exit 0
+}
+
 # idk if I want this anymore
 confirmPrompt() {
 	local confirm=""

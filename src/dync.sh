@@ -31,7 +31,7 @@ SILENT=false
 # if any args process them here
 if [[ $# -gt 0 ]]; then
 	case $1 in
-		-h|--help) showHelp; exit 0 ;;
+		-h|--help) showHelp ;;
 		# NOTE: commands here
 		add) addFile $@ ;;
 		list) listFiles $@ ;;
@@ -42,7 +42,7 @@ if [[ $# -gt 0 ]]; then
 					y) CONFIRM=false ;;
 					v) RSYNCFLAGS="-var" ;;
 					s) SILENT=true ;;
-					\?) printf "unknown flag: $OPTARG \nuse dync --help to display options\n"; exit 1 ;;
+					\?) printf "unknown option: $1 \nuse dync --help to display options\n"; exit 1 ;;
 				esac
 			done 
 			;;
