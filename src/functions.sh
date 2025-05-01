@@ -93,13 +93,17 @@ copyDotfiles() {
 
 listFiles() {
 	shift
+	list="ls -A1 --color=auto $DOTFILES"
 	if [[ $# -gt 0 ]]; then
-		printf "$ERROR list takes no arguments\n"
-		exit 1
-	else
-		printf "${IMPORTANT} Files currently in \n ${DIR}$DOTFILES ${NC}\n"
-		ls -A1 --color=auto $DOTFILES
+		while getopts ":r" opt; do
+			case $opt in
+				r) list+=" -R"; ;;
+				\?) printf "$ERROR unknown list option: $OPTARG\n"; exit 1 ;;
+			esac
+		done
 	fi
+	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
+	$list
 	exit 0
 }
 
@@ -109,10 +113,10 @@ addFile() {
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
 		exit 1
 	fi
-	for arg in $@
+	for file in $@
 	do
-		rsync $RSYNCFLAGS $arg $DOTFILES
-		printf "$arg added to $DOTFILES\n"
+		rsync $RSYNCFLAGS $file $DOTFILES
+		printf "$file added to $DOTFILES\n"
 	done
 	exit 0
 }
