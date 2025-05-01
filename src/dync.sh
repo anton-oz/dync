@@ -27,6 +27,9 @@ RSYNCFLAGS="-qar"
 CONFIRM=true
 SILENT=false
 
+s_set=false
+v_set=false
+
 # NOTE:
 # if any args process them here
 if [[ $# -gt 0 ]]; then
@@ -40,8 +43,18 @@ if [[ $# -gt 0 ]]; then
 			while getopts ":yvs" opt; do
 				case $opt in
 					y) CONFIRM=false ;;
-					v) RSYNCFLAGS="-var" ;;
-					s) SILENT=true ;;
+					v) 
+						if $s_set; then
+							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
+						fi
+						v_set=true
+						RSYNCFLAGS="-var" ;;
+					s) 
+						if $v_set; then
+							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
+						fi
+						s_set=true
+						SILENT=true ;;
 					\?) printf "unknown option: $1 \nuse dync --help to display options\n"; exit 1 ;;
 				esac
 			done 

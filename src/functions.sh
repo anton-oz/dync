@@ -19,11 +19,11 @@ confirmPrompt() {
 	loop_num=0
 	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
 		if [[ "$loop_num" == 2 ]]; then
-			printf "\n${IMPORTANT} To skip this confirmation use dync -y ${NC}\n\n"
-			exit 0
+			exit 1
 		fi
 		if [[ $loop_num -gt 0 ]]; then
 			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
+			printf "${IMPORTANT} To skip this confirmation use dync -y ${NC}\n"
 		fi
 		printf "${IMPORTANT}%s${NC} " " dync your files? (Y/n): "
 		read confirm
