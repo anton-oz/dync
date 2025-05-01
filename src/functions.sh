@@ -63,7 +63,9 @@ backup() {
 	if [[ ! -d $BACKUPS ]]; then
 		mkdir $BACKUPS
 		COLOR_DIR="${DIR}$BACKUPS ${NC}"
-		printf "${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
+		if [[ $SILENT = false ]]; then
+			printf "${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
+		fi
 	fi
 
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
@@ -76,6 +78,7 @@ backup() {
 
 	mkdir $BACKUP_LOCATION
 	copyAllToTarget $BACKUP_LOCATION
+	zipBackup $BACKUP_LOCATION
 	if [[ $? -eq 0 ]]; then
 		COLOR_DIR="${DIR}$BACKUP_LOCATION ${NC}"
 		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
@@ -85,6 +88,23 @@ backup() {
 		exit 1
 	fi
 }
+
+zipBackup() {
+	if [[ -z $1 ]]; then
+		printf "$ERROR zipBackup: need at one argument\n"
+		exit 1
+	fi
+	if [[ ! -d $1 ]]; then
+		printf "$ERROR zipBackup: argument must be a directory\n"
+		exit 1
+	fi
+	# supresses tar messages to stdout
+	tar -czf "$1.tar.gz" $1 2> /dev/null && rm -rf $1
+}
+
+# restoreToBackup() {
+# 	if [[ -]]
+# }
 
 copyDotfiles() {
 	cd $DOTFILES
