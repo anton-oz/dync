@@ -57,7 +57,8 @@ copyAllToTarget() {
 
 backup() {
 	# NOTE: will be changing to $HOME at some point
-	cd $DYNC/test_home
+	# cd $DYNC/test_home
+	cd $DYNC
 
 	# if backup folder doesnt exist, create it
 	if [[ ! -d $BACKUPS ]]; then
@@ -71,9 +72,10 @@ backup() {
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
 	# date string format
 	#							24 hour time : seconds__month_date_year
-	BACKUP_DATETIME=$(date +"%R:%S__%m_%d_%y")
+	# BACKUP_DATETIME=$(date +"%R:%S__%m_%d_%y")
 	# backup name and location
-	BACKUP_NAME="${BACKUP_NUM}_${BACKUP_DATETIME}"
+	# BACKUP_NAME="${BACKUP_NUM}_${BACKUP_DATETIME}"
+	BACKUP_NAME="$BACKUP_NUM"
 	BACKUP_LOCATION="${BACKUPS}/${BACKUP_NAME}"
 
 	mkdir $BACKUP_LOCATION
@@ -91,7 +93,7 @@ backup() {
 
 zipBackup() {
 	if [[ -z $1 ]]; then
-		printf "$ERROR zipBackup: need at one argument\n"
+		printf "$ERROR zipBackup: need one argument\n"
 		exit 1
 	fi
 	if [[ ! -d $1 ]]; then
@@ -102,9 +104,27 @@ zipBackup() {
 	tar -czf "$1.tar.gz" $1 2> /dev/null && rm -rf $1
 }
 
-# restoreToBackup() {
-# 	if [[ -]]
-# }
+# BUG:
+# tar zip file removes first /, so it creates a long ass
+# dir from the absolute file path
+# i.e /home/son/coder vs home/son/coder
+# home/son/coder is seen as ./home/son/coder
+restoreToBackup() {
+	# TODO:
+	# - get a arg for which backup to choose
+	# - unzip and rsync to home_target
+	shift
+	local backup
+	if [[ -z $1 ]] || [[ $# -gt 1 ]]; then
+		printf "$ERROR restoreToBackup: need one argument\n"
+		exit 1
+	fi
+
+	echo $DEV_HOME_TARGET
+	echo $REL_BACK
+	tar -xzf $REL_BACK/$1.tar.gz -C $DEV_HOME_TARGET
+	exit 0
+}
 
 copyDotfiles() {
 	cd $DOTFILES

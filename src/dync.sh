@@ -9,8 +9,10 @@ fi
 DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
 
 DOTFILES="$DYNC/dotfiles"
-BACKUPS="$DYNC/backups"
+# BACKUPS="$DYNC/backups"
+BACKUPS=$(realpath --relative-to $DYNC $DYNC/backups)
 SRC="$DYNC/src"
+
 
 # CONFIG_TARGET="$HOME/.config/"
 # HOME_TARGET="$HOME"
@@ -38,6 +40,7 @@ if [[ $# -gt 0 ]]; then
 		# NOTE: commands here
 		add) addFile $@ ;;
 		list) listFiles $@ ;;
+		restore) restoreToBackup $@ ;;
 		# NOTE: flags here
 		-*) 
 			while getopts ":yvs" opt; do
