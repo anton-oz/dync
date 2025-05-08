@@ -70,17 +70,14 @@ backup() {
 	fi
 
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
-	# date string format
-	#							24 hour time : seconds__month_date_year
-	# BACKUP_DATETIME=$(date +"%R:%S__%m_%d_%y")
-	# backup name and location
-	# BACKUP_NAME="${BACKUP_NUM}_${BACKUP_DATETIME}"
-	BACKUP_NAME="$BACKUP_NUM"
-	BACKUP_LOCATION="${BACKUPS}/${BACKUP_NAME}"
+	BACKUP_LOCATION=$(realpath "${BACKUPS}/${BACKUP_NUM}")
 
 	mkdir $BACKUP_LOCATION
+
+	cd $DEV_HOME_TARGET
 	copyAllToTarget $BACKUP_LOCATION
 	zipBackup $BACKUP_LOCATION
+
 	if [[ $? -eq 0 ]]; then
 		COLOR_DIR="${DIR}$BACKUP_LOCATION ${NC}"
 		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
