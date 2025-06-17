@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [[ ! "$HOME" ]]; then
+if [[ -z "$HOME" ]]; then
 	printf "\nno HOME varible set up, aborting\n"
 	exit 1
 fi
