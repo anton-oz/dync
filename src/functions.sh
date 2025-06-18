@@ -62,7 +62,11 @@ backup() {
 
 	# if backup folder doesnt exist, create it
 	if [[ ! -d $BACKUPS ]]; then
-		mkdir $BACKUPS
+		echo "Root permissions only needed once to create backup dir"
+		echo "and give dync permission to write to it"
+		echo "If you want to verify this message exists at ./src/functions.sh:67"
+		sudo mkdir -p $BACKUPS
+		sudo chown -R "$USER" /var/local/dync
 		COLOR_DIR="${DIR}$BACKUPS ${NC}"
 		if [[ $SILENT = false ]]; then
 			printf "${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
@@ -72,7 +76,7 @@ backup() {
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
 	BACKUP_LOCATION=$(realpath "${BACKUPS}/${BACKUP_NUM}")
 
-	mkdir $BACKUP_LOCATION
+	mkdir -p $BACKUP_LOCATION
 
 	cd $DEV_HOME_TARGET
 	copyAllToTarget $BACKUP_LOCATION

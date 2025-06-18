@@ -5,14 +5,23 @@ if [[ -z "$HOME" ]]; then
 	exit 1
 fi
 
+SYS_NAME=$(uname -s)
+
+
 # ugly but gets the absolute path of wherever dync is located
 DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
 
 DOTFILES="$DYNC/dotfiles"
-# BACKUPS="$DYNC/backups"
-BACKUPS=$(realpath --relative-to $DYNC $DYNC/backups)
 SRC="$DYNC/src"
 
+if [[ "$SYS_NAME" == "Linux" ]]; then
+	BACKUPS="/var/local/dync/backups"
+elif [[ "$SYS_NAME" == "Darwin" ]]; then
+	BACKUPS="/Users/Shared/dync/backups"
+else
+	echo "Your system is not compatible with dync"
+	exit 1
+fi
 
 # CONFIG_TARGET="$HOME/.config/"
 # HOME_TARGET="$HOME"
@@ -29,6 +38,7 @@ RSYNCFLAGS="-qar"
 CONFIRM=true
 SILENT=false
 
+# variables for setting rsync flags
 s_set=false
 v_set=false
 
@@ -76,6 +86,7 @@ cd $DYNC
 
 BACKUP_SUCCESS_MESSAGE=""
 if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
+# if [[ $(find test_home -mindepth 1 | read) ]]; then
 	backup
 fi
 
