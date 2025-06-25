@@ -165,6 +165,14 @@ addFile() {
 	fi
 	for file in $@
 	do
+		if [[ "$(basename $(dirname $(realpath $file)))" == ".config" ]]; then
+			if [[ ! -d "$DOTFILES/.config" ]]; then
+				mkdir -p "$DOTFILES/.config"
+			fi
+			rsync $RSYNCFLAGS $file "$DOTFILES/.config/$(basename $file)"
+			printf "$file added to $DOTFILES\n"
+			continue
+		fi
 		rsync $RSYNCFLAGS $file $DOTFILES
 		printf "$file added to $DOTFILES\n"
 	done
