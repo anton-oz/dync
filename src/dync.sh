@@ -47,10 +47,12 @@ v_set=false
 if [[ $# -gt 0 ]]; then
 	case $1 in
 		-h|--help) showHelp ;;
+		-V|--version) showVersion ;;
 		# NOTE: commands here
 		add) addFile $@ ;;
 		list) listFiles $@ ;;
 		restore) restoreToBackup $@ ;;
+		status) cd $DYNC && git status && cd - && exit 0 ;;
 		# NOTE: flags here
 		-*) 
 			while getopts ":yvs" opt; do
@@ -86,7 +88,6 @@ cd $DYNC
 
 BACKUP_SUCCESS_MESSAGE=""
 if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
-# if [[ $(find test_home -mindepth 1 | read) ]]; then
 	backup
 fi
 

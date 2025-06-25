@@ -4,12 +4,18 @@ showHelp() {
 	printf "Usage: dync [flags] [command]\n"
 	printf "  options:\n"
 	printf "    -h,--help	show this help message\n"
+	printf "		-v,--version	show dync version\n"
 	printf "    -y		skip confirm prompt\n"
 	printf "    -v		verbose output\n"
 	printf "    -s		silence all output (does not silence errors)\n"
 	printf "  commands:\n"
 	printf "    add		add a file to dync\n"
 	printf "    list	list files currently in dync\n"
+	exit 0
+}
+
+showVersion() {
+	printf "dync v0.1.0\n"
 	exit 0
 }
 
@@ -106,10 +112,8 @@ zipBackup() {
 }
 
 # BUG:
-# tar zip file removes first /, so it creates a long ass
-# dir from the absolute file path
-# i.e /home/son/coder vs home/son/coder
-# home/son/coder is seen as ./home/son/coder
+# restore is functional, but it does not remove files that were 
+# not in the backup that it restores to
 restoreToBackup() {
 	# TODO:
 	# - get a arg for which backup to choose
@@ -122,8 +126,9 @@ restoreToBackup() {
 	fi
 
 	echo $DEV_HOME_TARGET
-	echo $REL_BACK
-	tar -xzf $REL_BACK/$1.tar.gz -C $DEV_HOME_TARGET
+	echo $BACKUPS
+
+	tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$DEV_HOME_TARGET"
 	exit 0
 }
 
@@ -156,7 +161,7 @@ addFile() {
 	fi
 	for file in $@
 	do
-		rsync $RSYNCFLAGS $file $DOTFILES
+		ln -s $(realpath $file) $(realpath $DOTFILES)
 		printf "$file added to $DOTFILES\n"
 	done
 	exit 0
