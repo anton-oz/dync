@@ -165,7 +165,7 @@ addFile() {
 	fi
 	for file in $@
 	do
-		ln -s $(realpath $file) $(realpath $DOTFILES/$file)
+		rsync $RSYNCFLAGS $file $DOTFILES
 		printf "$file added to $DOTFILES\n"
 	done
 	exit 0
