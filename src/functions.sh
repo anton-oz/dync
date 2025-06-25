@@ -70,7 +70,7 @@ backup() {
 	if [[ ! -d $BACKUPS ]]; then
 		echo "Root permissions only needed once to create backup dir"
 		echo "and give dync permission to write to it"
-		echo "If you want to verify this message exists at ./src/functions.sh:67"
+		echo "If you want to verify, this message exists at ./src/functions.sh:73"
 		sudo mkdir -p $BACKUPS
 		sudo chown -R "$USER" /var/local/dync
 		COLOR_DIR="${DIR}$BACKUPS ${NC}"
@@ -84,7 +84,9 @@ backup() {
 
 	mkdir -p $BACKUP_LOCATION
 
-	cd $DEV_HOME_TARGET
+	# cd $DEV_HOME_TARGET
+	cd $HOME_TARGET
+	# NOTE: change copyAllToTarget to only copy files in $DYNC/dotfiles
 	copyAllToTarget $BACKUP_LOCATION
 	zipBackup $BACKUP_LOCATION
 
@@ -125,16 +127,18 @@ restoreToBackup() {
 		exit 1
 	fi
 
-	echo $DEV_HOME_TARGET
-	echo $BACKUPS
+	# echo $DEV_HOME_TARGET
+	# echo $BACKUPS
 
-	tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$DEV_HOME_TARGET"
+	# tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$DEV_HOME_TARGET"
+	tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$HOME_TARGET"
 	exit 0
 }
 
 copyDotfiles() {
 	cd $DOTFILES
-	copyAllToTarget $DEV_HOME_TARGET
+	# copyAllToTarget $DEV_HOME_TARGET
+	copyAllToTarget $HOME_TARGET
 }
 
 listFiles() {
@@ -161,7 +165,7 @@ addFile() {
 	fi
 	for file in $@
 	do
-		ln -s $(realpath $file) $(realpath $DOTFILES)
+		ln -s $(realpath $file) $(realpath $DOTFILES/$file)
 		printf "$file added to $DOTFILES\n"
 	done
 	exit 0

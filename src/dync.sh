@@ -23,10 +23,10 @@ else
 	exit 1
 fi
 
-# CONFIG_TARGET="$HOME/.config/"
-# HOME_TARGET="$HOME"
-DEV_CONFIG_TARGET="$DYNC/test_home/.config"
-DEV_HOME_TARGET="$DYNC/test_home"
+CONFIG_TARGET="$HOME/.config/"
+HOME_TARGET="$HOME"
+# DEV_CONFIG_TARGET="$DYNC/test_home/.config"
+# DEV_HOME_TARGET="$DYNC/test_home"
 
 # source colors and functions
 . $SRC/colors.sh
