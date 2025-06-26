@@ -5,6 +5,11 @@ if [[ -z "$HOME" ]]; then
 	exit 1
 fi
 
+if [[ -z "$DYNC" ]]; then
+	printf "no DYNC variable set up, aborting\n"
+	exit 1
+fi
+
 SYS_NAME=$(uname -s)
 
 if [[ "$SYS_NAME" == "Linux" ]]; then
@@ -15,9 +20,6 @@ else
 	echo "Your system is not compatible with dync"
 	exit 1
 fi
-
-# ugly but gets the absolute path of wherever dync is located
-DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
 
 DOTFILES="$DYNC/dotfiles"
 LINKS="$DYNC/links"

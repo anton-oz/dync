@@ -200,7 +200,9 @@ syncFiles() {
 		exit 1
 	fi
 
+	# TODO: combine into one command
 	rsync $RSYNCFLAGS -L $LINKS/.* $DOTFILES
+	rsync $RSYNCFLAGS -L $LINKS/* $DOTFILES
 
 	printf "${SUCCESS}  dynced  ${NC}\n"
 	exit 0
