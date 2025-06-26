@@ -10,6 +10,15 @@ move to `~/.config`, or wherever you would like dync to live and fork this repo.
 ```bash
 cd "$HOME/.config"
 git clone git@github.com:anton-oz/dync.git
+cd dync
+
+# add this line to your shell config file
+# zsh
+echo "export DYNC=$(realpath ./)" >> ~/.zshrc
+# bash
+echo "export DYNC=$(realpath ./)" >> ~/.bashrc
+
+# you will need to restart your shell so the changes take effect
 
 # remove the tail end of .gitignore to add your files to git
 sed -i '$d' .gitignore
@@ -18,7 +27,7 @@ sed -i '$d' .gitignore
 depending on your OS enter this command and dync is installed!
 ```bash
 # Linux, Mac OS
-sudo ln -s $(realpath <dync-location>) /usr/bin
+sudo ln -s $(realpath $DYNC/src/dync.sh) /usr/bin/dync
 ```
 
 ## Usage
