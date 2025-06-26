@@ -1,7 +1,7 @@
 #!/bin/bash
 
 showHelp() {
-	printf "Usage: dync [flags] [command]\n"
+	printf "Usage: dync [flags] [command] [options]\n"
 	printf "  options:\n"
 	printf "    -h,--help	show this help message\n"
 	printf "		-v,--version	show dync version\n"
@@ -11,6 +11,8 @@ showHelp() {
 	printf "  commands:\n"
 	printf "    add		add a file to dync\n"
 	printf "    list	list files currently in dync\n"
+	printf "    restore	restore to a backup number\n"
+	printf "    status	show git status for dync directory\n"
 	exit 0
 }
 
@@ -52,7 +54,7 @@ copyAllToTarget() {
 		printf "\ttarget = ${1}\n"
 		exit 1
 	fi
-	rsync $RSYNCFLAGS * .* $1
+	rsync $RSYNCFLAGS .* $1
 	wait
 	if [[ $? -eq 0 ]]; then
 		return 0
@@ -85,7 +87,8 @@ backup() {
 	mkdir -p $BACKUP_LOCATION
 
 	# cd $DEV_HOME_TARGET
-	cd $HOME_TARGET
+	# cd $HOME_TARGET
+	cd $DOTFILES
 	# NOTE: change copyAllToTarget to only copy files in $DYNC/dotfiles
 	copyAllToTarget $BACKUP_LOCATION
 	zipBackup $BACKUP_LOCATION
@@ -113,9 +116,6 @@ zipBackup() {
 	tar -czf "$1.tar.gz" $1 2> /dev/null && rm -rf $1
 }
 
-# BUG:
-# restore is functional, but it does not remove files that were 
-# not in the backup that it restores to
 restoreToBackup() {
 	# TODO:
 	# - get a arg for which backup to choose
@@ -126,9 +126,6 @@ restoreToBackup() {
 		printf "$ERROR restoreToBackup: need one argument\n"
 		exit 1
 	fi
-
-	# echo $DEV_HOME_TARGET
-	# echo $BACKUPS
 
 	# tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$DEV_HOME_TARGET"
 	tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$HOME_TARGET"
@@ -163,25 +160,41 @@ addFile() {
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
 		exit 1
 	fi
+	if [[ ! -d $DOTFILES ]]; then 
+		mkdir -p $DYNC/dotfiles
+	fi
+	if [[ ! -d $LINKS ]]; then
+		mkdir -p $DYNC/links
+	fi
 	for file in $@
 	do
 		if [[ "$(basename $(dirname $(realpath $file)))" == ".config" ]]; then
 			if [[ ! -d "$DOTFILES/.config" ]]; then
 				mkdir -p "$DOTFILES/.config"
 			fi
-			rsync $RSYNCFLAGS $file "$DOTFILES/.config/$(basename $file)"
+			if [[ ! -d "$LINKS/.config" ]]; then
+				mkdir -p "$LINKS/.config"
+			fi
+			ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+			# rsync $RSYNCFLAGS $file "$DOTFILES/.config/$(basename $file)"
 			printf "$file added to $DOTFILES\n"
 			continue
 		fi
-		rsync $RSYNCFLAGS $file $DOTFILES
+		ln -s $(realpath $file) $(realpath $LINKS)
+		# rsync $RSYNCFLAGS $file $DOTFILES
 		printf "$file added to $DOTFILES\n"
 	done
 	exit 0
 }
 
-watchDotfiles() {
-	EVENTS="CREATE,CLOSE_WRITE,DELETE,MODIFY,MOVED_FROM,MOVED_TO"
+syncFiles() {
+	if [[ $# -gt 1 ]]; then
+		printf "$ERROR${IMPORTANT} sync takes no arguments ${NC}\n"
+		exit 1
+	fi
+
+	rsync $RSYNCFLAGS -L $LINKS/.* $DOTFILES
+
+	exit 0
 }
-
-
 

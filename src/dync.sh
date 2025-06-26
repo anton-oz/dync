@@ -7,13 +7,6 @@ fi
 
 SYS_NAME=$(uname -s)
 
-
-# ugly but gets the absolute path of wherever dync is located
-DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
-
-DOTFILES="$DYNC/dotfiles"
-SRC="$DYNC/src"
-
 if [[ "$SYS_NAME" == "Linux" ]]; then
 	BACKUPS="/var/local/dync/backups"
 elif [[ "$SYS_NAME" == "Darwin" ]]; then
@@ -22,6 +15,13 @@ else
 	echo "Your system is not compatible with dync"
 	exit 1
 fi
+
+# ugly but gets the absolute path of wherever dync is located
+DYNC=$(realpath $(dirname $(dirname $BASH_SOURCE[0])))
+
+DOTFILES="$DYNC/dotfiles"
+LINKS="$DYNC/links"
+SRC="$DYNC/src"
 
 CONFIG_TARGET="$HOME/.config/"
 HOME_TARGET="$HOME"
@@ -53,6 +53,7 @@ if [[ $# -gt 0 ]]; then
 		list) listFiles $@ ;;
 		restore) restoreToBackup $@ ;;
 		status) cd $DYNC && git status && cd - && exit 0 ;;
+		sync) syncFiles $@ ;;
 		# NOTE: flags here
 		-*) 
 			while getopts ":yvs" opt; do
