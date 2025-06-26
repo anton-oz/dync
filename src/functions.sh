@@ -1,8 +1,8 @@
 #!/bin/bash
 
 showHelp() {
-	printf "Usage: dync [flags] [command] [options]\n"
-	printf "  options:\n"
+	printf "Usage: dync [flags] [command]\n"
+	printf "  flags:\n"
 	printf "    -h,--help	 show this help message\n"
 	printf "    -v,--version show dync version\n"
 	printf "    -y		 skip confirm prompt\n"
@@ -13,6 +13,7 @@ showHelp() {
 	printf "    list	 list files currently in dync\n"
 	printf "    restore	 restore to a backup number\n"
 	printf "    status	 show git status for dync directory\n"
+	printf "    sync	 sync the links you have added with tracked files\n"
 	exit 0
 }
 
@@ -123,18 +124,16 @@ restoreToBackup() {
 	shift
 	local backup
 	if [[ -z $1 ]] || [[ $# -gt 1 ]]; then
-		printf "$ERROR restoreToBackup: need one argument\n"
+		printf "$ERROR restoreToBackup: need a backup number to restore to\n"
 		exit 1
 	fi
 
-	# tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$DEV_HOME_TARGET"
 	tar -xzf "$BACKUPS/$1.tar.gz" --strip-components=5 -C "$HOME_TARGET"
 	exit 0
 }
 
 copyDotfiles() {
 	cd $DOTFILES
-	# copyAllToTarget $DEV_HOME_TARGET
 	copyAllToTarget $HOME_TARGET
 }
 
@@ -175,14 +174,22 @@ addFile() {
 			if [[ ! -d "$LINKS/.config" ]]; then
 				mkdir -p "$LINKS/.config"
 			fi
-			ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+			if [[ $v_set == true ]]; then
+				ln -v -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+			else
+				ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+			fi
 			# rsync $RSYNCFLAGS $file "$DOTFILES/.config/$(basename $file)"
-			printf "$file added to $DOTFILES\n"
+			# printf "$file added to $DOTFILES\n"
 			continue
 		fi
-		ln -s $(realpath $file) $(realpath $LINKS)
+		if [[ $v_set == true ]]; then
+			ln -v -s $(realpath $file) $(realpath $LINKS)
+		else
+			ln -s $(realpath $file) $(realpath $LINKS)
+		fi
 		# rsync $RSYNCFLAGS $file $DOTFILES
-		printf "$file added to $DOTFILES\n"
+		# printf "$file added to $DOTFILES\n"
 	done
 	exit 0
 }
@@ -195,6 +202,30 @@ syncFiles() {
 
 	rsync $RSYNCFLAGS -L $LINKS/.* $DOTFILES
 
+	printf "${SUCCESS}  dynced  ${NC}\n"
 	exit 0
 }
 
+bootstrap() {
+	# NOTE:
+	# process flags if neccesary
+	if $CONFIRM; then
+		confirmPrompt
+	fi
+
+	cd $DYNC
+
+	BACKUP_SUCCESS_MESSAGE=""
+	if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
+		backup
+	fi
+
+	copyDotfiles
+
+	if $SILENT; then
+		exit 0
+	fi
+	printf "${BACKUP_SUCCESS_MESSAGE}\n"
+	printf "${SUCCESS}  dynced  ${NC}\n"
+	exit 0
+}

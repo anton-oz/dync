@@ -42,61 +42,62 @@ SILENT=false
 s_set=false
 v_set=false
 
+flags_passed=false
+
 # NOTE:
 # if any args process them here
+
+if [[ $# -eq 0 ]]; then
+	showHelp
+fi
+
 if [[ $# -gt 0 ]]; then
 	case $1 in
 		-h|--help) showHelp ;;
 		-V|--version) showVersion ;;
-		# NOTE: commands here
-		add) addFile $@ ;;
-		list) listFiles $@ ;;
-		restore) restoreToBackup $@ ;;
-		status) cd $DYNC && git status && cd - && exit 0 ;;
-		sync) syncFiles $@ ;;
 		# NOTE: flags here
+		-S) syncFiles ;;
 		-*) 
 			while getopts ":yvs" opt; do
 				case $opt in
-					y) CONFIRM=false ;;
-					v) 
+					y) CONFIRM=false; flags_passed=true ;;
+					v)
 						if $s_set; then
 							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
 						fi
+						flags_passed=true
 						v_set=true
 						RSYNCFLAGS="-var" ;;
-					s) 
+					s)
 						if $v_set; then
 							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
 						fi
+						flags_passed=true
 						s_set=true
 						SILENT=true ;;
 					\?) printf "unknown option: $1 \nuse dync --help to display options\n"; exit 1 ;;
 				esac
 			done 
 			;;
-		*) printf "Unknown command: $1\nuse dync --help to display options\n"; exit 1;
+		# *) printf "Unknown command: $1\nuse dync --help to display options\n"; exit 1;
+		*) ;;
 	esac
 fi
 
-# NOTE:
-# process flags if neccesary
-if $CONFIRM; then
-	confirmPrompt
+command=$1
+if [[ $flags_passed == true ]]; then
+	command=$2
+	shift
 fi
 
-cd $DYNC
-
-BACKUP_SUCCESS_MESSAGE=""
-if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
-	backup
-fi
-
-copyDotfiles
-
-if $SILENT; then
-	exit 0
-fi
-printf "${BACKUP_SUCCESS_MESSAGE}\n"
-printf "${SUCCESS}  dynced  ${NC}\n"
+# NOTE: commands here
+case $command in
+	add) addFile $@ ;;
+	boot) bootstrap $@ ;;
+	list) listFiles $@ ;;
+	restore) restoreToBackup $@ ;;
+	status) cd $DYNC && git status && cd - && exit 0 ;;
+	sync) syncFiles $@ ;;
+	*) echo "unknown option: $command" && showHelp && exit 1 ;; 
+esac
 
