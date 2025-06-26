@@ -3,16 +3,16 @@
 showHelp() {
 	printf "Usage: dync [flags] [command] [options]\n"
 	printf "  options:\n"
-	printf "    -h,--help	show this help message\n"
-	printf "		-v,--version	show dync version\n"
-	printf "    -y		skip confirm prompt\n"
-	printf "    -v		verbose output\n"
-	printf "    -s		silence all output (does not silence errors)\n"
+	printf "    -h,--help	 show this help message\n"
+	printf "    -v,--version show dync version\n"
+	printf "    -y		 skip confirm prompt\n"
+	printf "    -v		 verbose output\n"
+	printf "    -s		 silence all output (does not silence errors)\n"
 	printf "  commands:\n"
-	printf "    add		add a file to dync\n"
-	printf "    list	list files currently in dync\n"
-	printf "    restore	restore to a backup number\n"
-	printf "    status	show git status for dync directory\n"
+	printf "    add		 add a file to dync\n"
+	printf "    list	 list files currently in dync\n"
+	printf "    restore	 restore to a backup number\n"
+	printf "    status	 show git status for dync directory\n"
 	exit 0
 }
 
