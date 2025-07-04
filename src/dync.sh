@@ -1,5 +1,11 @@
 #!/bin/bash -e
 
+##
+# Check for home and dync env variables, quit the
+# script if they do not exist as this script requires
+# those.
+##
+
 if [[ -z "$HOME" ]]; then
 	printf "\nno HOME varible set up, aborting\n"
 	exit 1
@@ -9,6 +15,11 @@ if [[ -z "$DYNC" ]]; then
 	printf "no DYNC variable set up, aborting\n"
 	exit 1
 fi
+
+##
+# Check what system dync is running on, and assign backups
+# variable to correct directory.
+##
 
 SYS_NAME=$(uname -s)
 
@@ -21,34 +32,47 @@ else
 	exit 1
 fi
 
+##
+# path varibles for later use in dyncs logic.
+##
 DOTFILES="$DYNC/dotfiles"
 LINKS="$DYNC/links"
 SRC="$DYNC/src"
 
 CONFIG_TARGET="$HOME/.config/"
 HOME_TARGET="$HOME"
+##
+# TODO:
+# set up tests for dync
+##
 # DEV_CONFIG_TARGET="$DYNC/test_home/.config"
 # DEV_HOME_TARGET="$DYNC/test_home"
+##
 
-# source colors and functions
+##
+# Source colors and functions.
+##
 . $SRC/colors.sh
 . $SRC/functions.sh
 
-# NOTE:
+##
 # default values for flag opts
+##
 RSYNCFLAGS="-qar"
 CONFIRM=true
 SILENT=false
 
+##
 # variables for setting rsync flags
+##
 s_set=false
 v_set=false
 
 flags_passed=false
 
-# NOTE:
-# if any args process them here
-
+##
+# If no arguments, show help menu.
+##
 if [[ $# -eq 0 ]]; then
 	showHelp
 fi
@@ -58,12 +82,11 @@ if [[ $# -gt 0 ]]; then
 		-h|--help) showHelp ;;
 		-V|--version) showVersion ;;
 		# NOTE: flags here
-		-S) syncFiles ;;
 		-*) 
 			while getopts ":yvs" opt; do
 				case $opt in
-					y) CONFIRM=false; flags_passed=true ;;
-					v)
+					y) CONFIRM=false ;;
+					v) 
 						if $s_set; then
 							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
 						fi
@@ -84,6 +107,15 @@ if [[ $# -gt 0 ]]; then
 		# *) printf "Unknown command: $1\nuse dync --help to display options\n"; exit 1;
 		*) ;;
 	esac
+	# case $2 in
+	# 	# NOTE: commands here
+	# 	add) addFile $@ ;;
+	# 	list) listFiles $@ ;;
+	# 	restore) restoreToBackup $@ ;;
+	# 	status) cd $DYNC && git status && cd - && exit 0 ;;
+	# 	sync) syncFiles $@ ;;
+	# 	*) echo unkown commen ;;
+	# esac
 fi
 
 command=$1
@@ -102,4 +134,3 @@ case $command in
 	sync) syncFiles $@ ;;
 	*) echo "unknown option: $command" && showHelp && exit 1 ;; 
 esac
-

@@ -10,6 +10,7 @@ showHelp() {
 	printf "    -s		 silence all output (does not silence errors)\n"
 	printf "  commands:\n"
 	printf "    add		 add a file to dync\n"
+	printf "    boot	 bootstrap your dync files\n"
 	printf "    list	 list files currently in dync\n"
 	printf "    restore	 restore to a backup number\n"
 	printf "    status	 show git status for dync directory\n"
@@ -23,29 +24,47 @@ showVersion() {
 }
 
 # idk if I want this anymore
-confirmPrompt() {
-	local confirm=""
-	loop_num=0
-	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
-		if [[ "$loop_num" == 2 ]]; then
-			exit 1
-		fi
-		if [[ $loop_num -gt 0 ]]; then
-			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
-			printf "${IMPORTANT} To skip this confirmation use dync -y ${NC}\n"
-		fi
-		printf "${IMPORTANT}%s${NC} " " dync your files? (Y/n): "
-		read confirm
-		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
-			return 0
-		elif [[ $confirm == [nN] || $confirm == [nN][oO] || $confirm == [qQ] ]]; then
-			exit 0
-		fi
-		loop_num=$(($loop_num + 1))
-	done
-}
+# confirmPrompt() {
+# 	local confirm=""
+# 	loop_num=0
+# 	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
+# 		if [[ "$loop_num" == 2 ]]; then
+# 			exit 1
+# 		fi
+# 		if [[ $loop_num -gt 0 ]]; then
+# 			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
+# 			printf "${IMPORTANT} To skip this confirmation use dync -y ${NC}\n"
+# 		fi
+# 		printf "${IMPORTANT}%s${NC} " " dync your files? (Y/n): "
+# 		read confirm
+# 		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+# 			return 0
+# 		elif [[ $confirm == [nN] || $confirm == [nN][oO] || $confirm == [qQ] ]]; then
+# 			exit 0
+# 		fi
+# 		loop_num=$(($loop_num + 1))
+# 	done
+# }
 
 # used for dyncing
+# copyAllToTarget() {
+# 	if [[ -z $1 ]]; then
+# 		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
+# 		exit 1
+# 	elif [[ ! -d $1 ]]; then
+# 		printf "$ERROR${IMPORTANT} target must be a directory ${NC}\n"
+# 		printf "\ttarget = ${1}\n"
+# 		exit 1
+# 	fi
+# 	rsync $RSYNCFLAGS .* $1
+# 	wait
+# 	if [[ $? -eq 0 ]]; then
+# 		return 0
+# 	else
+# 		exit 1
+# 	fi
+# }
+
 copyAllToTarget() {
 	if [[ -z $1 ]]; then
 		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
@@ -55,7 +74,19 @@ copyAllToTarget() {
 		printf "\ttarget = ${1}\n"
 		exit 1
 	fi
-	rsync $RSYNCFLAGS .* $1
+
+	ref_dir="$LINKS"
+	target_dir="$1"
+
+	for file in "$ref_dir"/* "$ref_dir"/.*; do
+		filename=$(basename "$file")
+		[[ "$filename" == "." || "$filename" == ".." ]] && continue
+		if [[ -e "$filename" ]]; then
+			# echo "would sync $filename to $target_dir"
+			rsync $RSYNCFLAGS -L "$filename" "$target_dir/"
+		fi
+	done
+
 	wait
 	if [[ $? -eq 0 ]]; then
 		return 0
@@ -148,6 +179,7 @@ listFiles() {
 
 addFile() {
 	shift
+	echo $@
 	if [[ $# -eq 0 ]]; then
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
 		exit 1
@@ -197,7 +229,9 @@ syncFiles() {
 	rsync $RSYNCFLAGS -L $LINKS/.* $DOTFILES
 	# BUG: if no unhidden files, this will throw
 	# an error
-	# rsync $RSYNCFLAGS -L $LINKS/* $DOTFILES
+	if [[ $(ls $LINKS | wc -w) -gt 0 ]]; then
+		rsync $RSYNCFLAGS -L $LINKS/* $DOTFILES
+	fi
 
 	printf "${SUCCESS}  dynced  ${NC}\n"
 	exit 0
@@ -206,9 +240,9 @@ syncFiles() {
 bootstrap() {
 	# NOTE:
 	# process flags if neccesary
-	if $CONFIRM; then
-		confirmPrompt
-	fi
+	# if $CONFIRM; then
+	# 	confirmPrompt
+	# fi
 
 	cd $DYNC
 
