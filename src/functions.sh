@@ -139,17 +139,10 @@ copyDotfiles() {
 
 listFiles() {
 	shift
-	list="ls -A1 --color=auto $DOTFILES"
-	if [[ $# -gt 0 ]]; then
-		while getopts ":r" opt; do
-			case $opt in
-				r) list+=" -R"; ;;
-				\?) printf "$ERROR unknown list option: $OPTARG\n"; exit 1 ;;
-			esac
-		done
-	fi
-	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
-	$list
+
+	printf "${IMPORTANT} Files currently tracked by dync: ${NC}"
+	find $DOTFILES -maxdepth 2 -type d -printf '\033[01;34m%P\033[0m \n'
+	find $DOTFILES -maxdepth 2 -type f -printf '%P\n'
 	exit 0
 }
 
@@ -202,7 +195,9 @@ syncFiles() {
 
 	# TODO: combine into one command
 	rsync $RSYNCFLAGS -L $LINKS/.* $DOTFILES
-	rsync $RSYNCFLAGS -L $LINKS/* $DOTFILES
+	# BUG: if no unhidden files, this will throw
+	# an error
+	# rsync $RSYNCFLAGS -L $LINKS/* $DOTFILES
 
 	printf "${SUCCESS}  dynced  ${NC}\n"
 	exit 0
