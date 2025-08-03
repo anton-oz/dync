@@ -4,7 +4,7 @@ showHelp() {
 	printf "Usage: dync [flags] [command]\n"
 	printf "  flags:\n"
 	printf "    -h,--help	 show this help message\n"
-	printf "    -v,--version show dync version\n"
+	printf "    -V,--version show dync version\n"
 	printf "    -y		 skip confirm prompt\n"
 	printf "    -v		 verbose output\n"
 	printf "    -s		 silence all output (does not silence errors)\n"
@@ -23,48 +23,10 @@ showVersion() {
 	exit 0
 }
 
-# idk if I want this anymore
-# confirmPrompt() {
-# 	local confirm=""
-# 	loop_num=0
-# 	while [[  $confirm != [yY] || $confirm != [yY][eE][sS] ]]; do
-# 		if [[ "$loop_num" == 2 ]]; then
-# 			exit 1
-# 		fi
-# 		if [[ $loop_num -gt 0 ]]; then
-# 			printf "\n${IMPORTANT} Please enter Y or n to continue or exit dync ${NC}\n"
-# 			printf "${IMPORTANT} To skip this confirmation use dync -y ${NC}\n"
-# 		fi
-# 		printf "${IMPORTANT}%s${NC} " " dync your files? (Y/n): "
-# 		read confirm
-# 		if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
-# 			return 0
-# 		elif [[ $confirm == [nN] || $confirm == [nN][oO] || $confirm == [qQ] ]]; then
-# 			exit 0
-# 		fi
-# 		loop_num=$(($loop_num + 1))
-# 	done
-# }
-
-# used for dyncing
-# copyAllToTarget() {
-# 	if [[ -z $1 ]]; then
-# 		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
-# 		exit 1
-# 	elif [[ ! -d $1 ]]; then
-# 		printf "$ERROR${IMPORTANT} target must be a directory ${NC}\n"
-# 		printf "\ttarget = ${1}\n"
-# 		exit 1
-# 	fi
-# 	rsync $RSYNCFLAGS .* $1
-# 	wait
-# 	if [[ $? -eq 0 ]]; then
-# 		return 0
-# 	else
-# 		exit 1
-# 	fi
-# }
-
+##
+# Takes a reference directory, and copies everything from that directory
+# to the target directory.
+##
 copyAllToTarget() {
 	if [[ -z $1 ]]; then
 		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
@@ -79,14 +41,17 @@ copyAllToTarget() {
 	target_dir="$1"
 
 	for file in "$ref_dir"/* "$ref_dir"/.*; do
+		##
+		# For every file in the reference directory, if it is not `.` or `..`
+		# sync to target directory.
 		filename=$(basename "$file")
+		echo $filename
 		[[ "$filename" == "." || "$filename" == ".." ]] && continue
-		if [[ -e "$filename" ]]; then
-			# echo "would sync $filename to $target_dir"
-			rsync $RSYNCFLAGS -L "$filename" "$target_dir/"
-		fi
+		rsync $RSYNCFLAGS -L "$filename" "$target_dir/"
 	done
 
+	##
+	# If any problems with syncing, exit the program.
 	wait
 	if [[ $? -eq 0 ]]; then
 		return 0
@@ -96,38 +61,41 @@ copyAllToTarget() {
 }
 
 backup() {
-	# NOTE: will be changing to $HOME at some point
-	# cd $DYNC/test_home
 	cd $DYNC
 
-	# if backup folder doesnt exist, create it
+	# ##
+	# If backup folder doesnt exist, create it
 	if [[ ! -d $BACKUPS ]]; then
 		echo "Root permissions only needed once to create backup dir"
 		echo "and give dync permission to write to it"
 		echo "If you want to verify, this message exists at ./src/functions.sh:73"
 		sudo mkdir -p $BACKUPS
 		sudo chown -R "$USER" /var/local/dync
-		COLOR_DIR="${DIR}$BACKUPS ${NC}"
+		BACKUP_DIR="${DIR}$BACKUPS ${NC}"
 		if [[ $SILENT = false ]]; then
-			printf "${IMPORTANT} Created backup directory @ $COLOR_DIR\n"
+			printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
 		fi
 	fi
 
+	##
+	# Get the number of backups, and the directory that contains the backups.
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
 	BACKUP_LOCATION=$(realpath "${BACKUPS}/${BACKUP_NUM}")
 
+	##
+	# Create the directory for the backup you are about to make.
 	mkdir -p $BACKUP_LOCATION
 
-	# cd $DEV_HOME_TARGET
-	# cd $HOME_TARGET
+	# TODO:
+	# I want to change to $HOME instead, but only backup the files that are going
+	# to be affected by dync
 	cd $DOTFILES
-	# NOTE: change copyAllToTarget to only copy files in $DYNC/dotfiles
 	copyAllToTarget $BACKUP_LOCATION
 	zipBackup $BACKUP_LOCATION
 
 	if [[ $? -eq 0 ]]; then
-		COLOR_DIR="${DIR}$BACKUP_LOCATION ${NC}"
-		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $COLOR_DIR\n")
+		BACKUP_DIR="${DIR}$BACKUP_LOCATION ${NC}"
+		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $BACKUP_DIR\n")
 		return 0
 	else
 		printf "$ERROR${IMPORTANT} failed to backup files. aborting. ${NC}\n"
@@ -178,20 +146,24 @@ listFiles() {
 }
 
 addFile() {
+	# shift to have the first arg $1
 	shift
 	echo $@
+
 	if [[ $# -eq 0 ]]; then
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
 		exit 1
 	fi
-	if [[ ! -d $DOTFILES ]]; then 
+
+	if [[ ! -d $DOTFILES ]]; then
 		mkdir -p $DYNC/dotfiles
 	fi
+
 	if [[ ! -d $LINKS ]]; then
 		mkdir -p $DYNC/links
 	fi
-	for file in $@
-	do
+
+	for file in $@; do
 		if [[ "$(basename $(dirname $(realpath $file)))" == ".config" ]]; then
 			if [[ ! -d "$DOTFILES/.config" ]]; then
 				mkdir -p "$DOTFILES/.config"
@@ -204,17 +176,14 @@ addFile() {
 			else
 				ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
 			fi
-			# rsync $RSYNCFLAGS $file "$DOTFILES/.config/$(basename $file)"
-			# printf "$file added to $DOTFILES\n"
-			continue
-		fi
-		if [[ $v_set == true ]]; then
-			ln -v -s $(realpath $file) $(realpath $LINKS)
-		else
-			ln -s $(realpath $file) $(realpath $LINKS)
-		fi
-		# rsync $RSYNCFLAGS $file $DOTFILES
-		# printf "$file added to $DOTFILES\n"
+		continue
+	fi
+
+	if [[ $v_set == true ]]; then
+		ln -v -s $(realpath $file) $(realpath $LINKS)
+	else
+		ln -s $(realpath $file) $(realpath $LINKS)
+	fi
 	done
 	exit 0
 }
