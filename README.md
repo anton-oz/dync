@@ -4,27 +4,40 @@ sync dotfiles across machines
 
 > **Note:** dync is only compatible with unix based systems
 
-## Installation
+## Quick Install
 
-move to `~/.config`, or wherever you would like dync to live and fork this repo.
+**ZSH**
 ```bash
 cd "$HOME/.config"
 git clone git@github.com:anton-oz/dync.git
 cd dync
+echo "export DYNC=$(realpath ./)" >> ~/.zshrc
+sed -i '$d' .gitignore
+sudo ln -s $(realpath $DYNC/src/dync.sh) /usr/bin/dync
+```
 
-# add this line to your shell config file
+## Installation
+
+1. Move to `~/.config`, or wherever you would like dync to live and clone this repo.
+```bash
+cd "$HOME/.config"
+git clone git@github.com:anton-oz/dync.git
+cd dync
+```
+2. **IMPORANT: Make sure that you are in the dync directory before running this next command.**
+```bash
 # zsh
 echo "export DYNC=$(realpath ./)" >> ~/.zshrc
 # bash
 echo "export DYNC=$(realpath ./)" >> ~/.bashrc
-
-# you will need to restart your shell so the changes take effect
-
+# you will need to restart your shell so these changes take effect
+```
+3. remove `./dotfiles` from `.gitignore`.
+```bash
 # remove the tail end of .gitignore to add your files to git
 sed -i '$d' .gitignore
 ```
-
-depending on your OS enter this command and dync is installed!
+4. link dync to bin and dync is good to go!
 ```bash
 # Linux, Mac OS
 sudo ln -s $(realpath $DYNC/src/dync.sh) /usr/bin/dync
