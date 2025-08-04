@@ -35,12 +35,14 @@ fi
 ##
 # path varibles for later use in dyncs logic.
 ##
+
 DOTFILES="$DYNC/dotfiles"
 LINKS="$DYNC/links"
 SRC="$DYNC/src"
 
 CONFIG_TARGET="$HOME/.config/"
 HOME_TARGET="$HOME"
+
 ##
 # TODO:
 # set up tests for dync
@@ -104,18 +106,8 @@ if [[ $# -gt 0 ]]; then
 				esac
 			done 
 			;;
-		# *) printf "Unknown command: $1\nuse dync --help to display options\n"; exit 1;
 		*) ;;
 	esac
-	# case $2 in
-	# 	# NOTE: commands here
-	# 	add) addFile $@ ;;
-	# 	list) listFiles $@ ;;
-	# 	restore) restoreToBackup $@ ;;
-	# 	status) cd $DYNC && git status && cd - && exit 0 ;;
-	# 	sync) syncFiles $@ ;;
-	# 	*) echo unkown commen ;;
-	# esac
 fi
 
 command=$1
@@ -127,10 +119,11 @@ fi
 # NOTE: commands here
 case $command in
 	add) addFile $@ ;;
+	remove|rm) removeFile $@ ;;
 	boot) bootstrap $@ ;;
 	list) listFiles $@ ;;
 	restore) restoreToBackup $@ ;;
 	status) cd $DYNC && git status && cd - && exit 0 ;;
 	sync) syncFiles $@ ;;
-	*) echo "unknown option: $command" && showHelp && exit 1 ;; 
+	*) echo "unknown command: $command" && showHelp && exit 1 ;; 
 esac

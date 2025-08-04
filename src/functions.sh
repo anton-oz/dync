@@ -148,7 +148,7 @@ listFiles() {
 addFile() {
 	# shift to have the first arg $1
 	shift
-	echo $@
+	# echo $@
 
 	if [[ $# -eq 0 ]]; then
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
@@ -163,29 +163,44 @@ addFile() {
 		mkdir -p $DYNC/links
 	fi
 
+	if [[ ! -d "$DOTFILES/.config" ]]; then
+		mkdir -p "$DOTFILES/.config"
+	fi
+	if [[ ! -d "$LINKS/.config" ]]; then
+		mkdir -p "$LINKS/.config"
+	fi
+
 	for file in $@; do
+		##
+		# If file comes from ~/.config dir add to .config dir in $DYNC/links
+		##
 		if [[ "$(basename $(dirname $(realpath $file)))" == ".config" ]]; then
-			if [[ ! -d "$DOTFILES/.config" ]]; then
-				mkdir -p "$DOTFILES/.config"
-			fi
-			if [[ ! -d "$LINKS/.config" ]]; then
-				mkdir -p "$LINKS/.config"
-			fi
 			if [[ $v_set == true ]]; then
 				ln -v -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
 			else
 				ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
 			fi
 		continue
-	fi
+		fi
 
-	if [[ $v_set == true ]]; then
-		ln -v -s $(realpath $file) $(realpath $LINKS)
-	else
-		ln -s $(realpath $file) $(realpath $LINKS)
-	fi
+		if [[ $v_set == true ]]; then
+			ln -v -s $(realpath $file) $(realpath $LINKS)
+		else
+			ln -s $(realpath $file) $(realpath $LINKS)
+		fi
+
 	done
 	exit 0
+}
+
+removeFile() {
+	shift
+	for arg in $@; do
+		if [[ $(find "$DYNC/links/$arg") ]]; then
+			rm -rf $DYNC/links/$arg
+		fi
+		shift
+	done
 }
 
 syncFiles() {
@@ -207,12 +222,6 @@ syncFiles() {
 }
 
 bootstrap() {
-	# NOTE:
-	# process flags if neccesary
-	# if $CONFIRM; then
-	# 	confirmPrompt
-	# fi
-
 	cd $DYNC
 
 	BACKUP_SUCCESS_MESSAGE=""
