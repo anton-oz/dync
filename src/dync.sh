@@ -61,7 +61,6 @@ HOME_TARGET="$HOME"
 # default values for flag opts
 ##
 RSYNCFLAGS="-qar"
-CONFIRM=true
 SILENT=false
 
 ##
@@ -87,7 +86,6 @@ if [[ $# -gt 0 ]]; then
 		-*) 
 			while getopts ":yvs" opt; do
 				case $opt in
-					y) CONFIRM=false ;;
 					v) 
 						if $s_set; then
 							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
