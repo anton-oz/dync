@@ -86,7 +86,7 @@ if [[ $# -gt 0 ]]; then
 		-*) 
 			while getopts ":yvs" opt; do
 				case $opt in
-					v) 
+					v)
 						if $s_set; then
 							printf "$ERROR cannot set -s and -v at the same time\n"; exit 1
 						fi

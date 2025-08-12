@@ -6,7 +6,7 @@ NC="${ESC}0m"
 FG="${ESC}38;5;"
 BG="${ESC}48;5;"
 
-FG_BLUE="${FG}117m"
+FG_BLUE="${ESC}01;34m"
 FG_RED="${FG}196m"
 FG_GREEN="${FG}83m"
 FG_BLACK="${FG}232;1m"
@@ -16,7 +16,7 @@ BOLD_WHITE="${ESC}1;0m"
 BG_BLACK="${BG}16m"
 BG_GREEN="${BG}83m"
 
-DIR="${FG_BLUE}${BG_BLACK}"
+DIR="${FG_BLUE}"
 
 IMPORTANT="${BOLD_WHITE}${BG_BLACK}"
 

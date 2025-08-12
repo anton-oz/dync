@@ -139,9 +139,14 @@ copyDotfiles() {
 listFiles() {
 	shift
 
+	if [[ -z "$( ls -A $DOTFILES/.config && ls -A $DOTFILES -I .config )" ]]; then
+		printf "${IMPORTANT} No files currently tracked by dync ${NC}\n"
+		exit 0
+	fi
+
 	printf "${IMPORTANT} Files currently tracked by dync: ${NC}"
-	find $DOTFILES -maxdepth 2 -type d -printf '\033[01;34m%P\033[0m \n'
-	find $DOTFILES -maxdepth 2 -type f -printf '%P\n'
+	find $DOTFILES/.config -maxdepth 2 -type d -printf "${DIR}%P${NC}\n"
+	find $DOTFILES -maxdepth 2 -type f -printf "%P\n"
 	exit 0
 }
 
@@ -199,10 +204,17 @@ removeFile() {
 		if [[ $(find "$DYNC/links/$arg") ]]; then
 			rm -rf $DYNC/links/$arg
 		fi
+		if [[ $(find "$DYNC/dotfiles/$arg") ]]; then
+			rm -rf $DYNC/dotfiles/$arg
+		fi
 		shift
 	done
+	
 }
 
+##
+# copys files from ./links to ./dotfiles
+##
 syncFiles() {
 	if [[ $# -gt 1 ]]; then
 		printf "$ERROR${IMPORTANT} sync takes no arguments ${NC}\n"
