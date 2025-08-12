@@ -119,9 +119,10 @@ case $command in
 	add) addFile $@ ;;
 	remove|rm) removeFile $@ ;;
 	boot) bootstrap $@ ;;
+	backup) backup ;;
 	list) listFiles $@ ;;
 	restore) restoreToBackup $@ ;;
-	status) cd $DYNC && git status && cd - && exit 0 ;;
+	status) showStatus ;;
 	sync) syncFiles $@ ;;
 	*) echo "unknown command: $command" && showHelp && exit 1 ;; 
 esac

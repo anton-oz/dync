@@ -5,11 +5,11 @@ showHelp() {
 	printf "  flags:\n"
 	printf "    -h,--help	 show this help message\n"
 	printf "    -V,--version show dync version\n"
-	printf "    -y		 skip confirm prompt\n"
 	printf "    -v		 verbose output\n"
 	printf "    -s		 silence all output (does not silence errors)\n"
 	printf "  commands:\n"
 	printf "    add		 add a file to dync\n"
+	printf "    rm, remove	 remove a file from dync\n"
 	printf "    boot	 bootstrap your dync files\n"
 	printf "    list	 list files currently in dync\n"
 	printf "    restore	 restore to a backup number\n"
@@ -61,6 +61,11 @@ copyAllToTarget() {
 }
 
 backup() {
+	if [[ -z $( isDotfilesEmpty ) ]]; then
+		echo no files in dync, aborting backup...
+		return 0
+	fi
+
 	cd $DYNC
 
 	# ##
@@ -70,7 +75,7 @@ backup() {
 		echo "and give dync permission to write to it"
 		echo "If you want to verify, this message exists at ./src/functions.sh:73"
 		sudo mkdir -p $BACKUPS
-		sudo chown -R "$USER" /var/local/dync
+		sudo chown -R "$USER" $BACKUPS
 		BACKUP_DIR="${DIR}$BACKUPS ${NC}"
 		if [[ $SILENT = false ]]; then
 			printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
@@ -136,24 +141,27 @@ copyDotfiles() {
 	copyAllToTarget $HOME_TARGET
 }
 
+isDotfilesEmpty() {
+	ls -A $DOTFILES/.config && ls -A $DOTFILES -I .config
+}
+
 listFiles() {
 	shift
 
-	if [[ -z "$( ls -A $DOTFILES/.config && ls -A $DOTFILES -I .config )" ]]; then
+	if [[ -z "$( isDotfilesEmpty )" ]]; then
 		printf "${IMPORTANT} No files currently tracked by dync ${NC}\n"
 		exit 0
 	fi
 
-	printf "${IMPORTANT} Files currently tracked by dync: ${NC}"
-	find $DOTFILES/.config -maxdepth 2 -type d -printf "${DIR}%P${NC}\n"
+	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
+	printf "${DIR}.config${NC}"
+	find $DOTFILES/.config -maxdepth 2 -type d -printf "  ${DIR}%P${NC}\n"
 	find $DOTFILES -maxdepth 2 -type f -printf "%P\n"
 	exit 0
 }
 
 addFile() {
-	# shift to have the first arg $1
 	shift
-	# echo $@
 
 	if [[ $# -eq 0 ]]; then
 		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
@@ -195,6 +203,7 @@ addFile() {
 		fi
 
 	done
+
 	exit 0
 }
 
@@ -233,11 +242,27 @@ syncFiles() {
 	exit 0
 }
 
+##
+#
+##
+showStatus() {
+	cd $DYNC
+	git status
+	cd - >/dev/null
+	exit 0
+}
+
 bootstrap() {
+	if [[ -z $( isDotfilesEmpty ) ]]; then
+		echo no files in dync, aborting bootstrap...
+		return 0
+	fi
+
 	cd $DYNC
 
 	BACKUP_SUCCESS_MESSAGE=""
-	if [[ $(ls -1a test_home | wc -l) -gt 2 ]]; then
+
+	if [[ $(ls -1A $HOME_TARGET | wc -l) ]]; then
 		backup
 	fi
 
