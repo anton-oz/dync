@@ -73,7 +73,7 @@ backup() {
 	if [[ ! -d $BACKUPS ]]; then
 		echo "Root permissions only needed once to create backup dir"
 		echo "and give dync permission to write to it"
-		echo "If you want to verify, this message exists at ./src/functions.sh:73"
+		echo "If you want to verify, this message exists at $DYNC/src/functions.sh:73"
 		sudo mkdir -p $BACKUPS
 		sudo chown -R "$USER" $BACKUPS
 		BACKUP_DIR="${DIR}$BACKUPS ${NC}"
