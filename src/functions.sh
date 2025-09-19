@@ -183,6 +183,10 @@ isDotfilesEmpty() {
 
 listFiles() {
 	shift
+	if [[ $1 == "backup" ]]; then
+		ls -lA $BACKUPS
+		return 0
+	fi
 
 	if [[ -z "$(isDotfilesEmpty)" ]]; then
 		printf "${IMPORTANT} No files currently tracked by dync ${NC}\n"
@@ -303,7 +307,7 @@ bootstrap() {
 	BACKUP_SUCCESS_MESSAGE=""
 
 	if [[ $(ls -1A $HOME_TARGET | wc -l) ]]; then
-		backupRework
+		backup
 	fi
 
 	copyDotfiles
