@@ -189,10 +189,12 @@ listFiles() {
 		exit 0
 	fi
 
+	# Needs a refactor, this is fucked
 	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
 	printf "${DIR}.config${NC}"
 	find $DOTFILES/.config -maxdepth 1 -type d -printf "  ${DIR}%P${NC}\n"
-	find $DOTFILES -maxdepth 2 -type f -printf "%P\n"
+	find $DOTFILES -maxdepth 1 -not -path $DOTFILES/.config* -type d -printf "${DIR}%P${NC}\n"
+	find $DOTFILES -maxdepth 1 -type f -printf "%P\n"
 	exit 0
 }
 
