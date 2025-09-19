@@ -14,7 +14,7 @@ showHelp() {
 	printf "    list	 list files currently in dync\n"
 	printf "    restore	 restore to a backup number\n"
 	printf "    status	 show git status for dync directory\n"
-	printf "    sync	 sync the links you have added with tracked files\n"
+	printf "    sync	 update dotfiles to latest changes\n"
 	exit 0
 }
 
@@ -60,42 +60,78 @@ copyAllToTarget() {
 	fi
 }
 
+# excludes .config
+getMatchingFiles() {
+	local home_files
+	local tracked_files
+
+	home_files=$(find "$HOME_TARGET" -maxdepth 1 -not -path "$CONFIG_TARGET" -printf "%P\n" | sort)
+	tracked_files=$(ls --ignore=".config" -A $DOTFILES | sort)
+	
+	local matching_files
+	matching_files=$(comm -12 <(echo "$tracked_files") <(echo "$home_files") | \
+		sed "s|^|$HOME_TARGET\/|"
+	)
+	echo $matching_files
+
+
+	local config_dir_files
+	local tracked_config_dir_files
+	config_dir_files=$(find $CONFIG_TARGET -maxdepth 1 -printf "%P\n" | sort)
+	tracked_config_dir_files=$(ls -A $DOTFILES | sort)
+	
+	local matching_config_dir_files
+	matching_config_dir_files=$(\
+		comm -12 <(echo "$tracked_config_dir_files") <(echo "$config_dir_files") | \
+		sed "s|^|$HOME_TARGET\/|"
+	)
+
+	echo $matching_config_dir_files
+}
+
+##
+# reworked copy function
+##
+copyMatchingFilesToTarget() {
+	if [[ -z $1 ]] || [[ ! -d $1 ]]; then
+		printf "$ERROR${IMPORTANT} copyMatchesToTarget: arg not a directory ${NC}\n"
+		return 1
+	fi
+	cp "$(getMatchingFiles)" $1
+}
+
+##
+# backup only backs up files that would be updated by dync.
+# Instead of backing up entire $HOME dir ( which could take a while ), only
+# backup matching files.
+##
 backup() {
+	# this will compare files between dotfiles and home to something a match
+	# But, it will match .config
+
 	if [[ -z $( isDotfilesEmpty ) ]]; then
-		echo no files in dync, aborting backup...
-		return 0
+		 echo no files in dync, aborting backup...
+		 return 0
 	fi
 
-	cd $DYNC
-
-	# ##
-	# If backup folder doesnt exist, create it
 	if [[ ! -d $BACKUPS ]]; then
-		echo "Root permissions only needed once to create backup dir"
-		echo "and give dync permission to write to it"
-		echo "If you want to verify, this message exists at $DYNC/src/functions.sh:73"
-		sudo mkdir -p $BACKUPS
-		sudo chown -R "$USER" $BACKUPS
-		BACKUP_DIR="${DIR}$BACKUPS ${NC}"
-		if [[ $SILENT = false ]]; then
-			printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
-		fi
+		 echo "Root permissions only needed once to create backup dir"
+		 echo "and give dync permission to write to it"
+		 echo "If you want to verify, this message exists at $DYNC/src/functions.sh:73"
+		 sudo mkdir -p $BACKUPS
+		 sudo chown -R "$USER" $BACKUPS
+		 BACKUP_DIR="${DIR}$BACKUPS ${NC}"
+		 if [[ $SILENT = false ]]; then
+				 printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
+		 fi
 	fi
-
-	##
-	# Get the number of backups, and the directory that contains the backups.
+	
 	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
 	BACKUP_LOCATION=$(realpath "${BACKUPS}/${BACKUP_NUM}")
 
-	##
-	# Create the directory for the backup you are about to make.
 	mkdir -p $BACKUP_LOCATION
 
-	# TODO:
-	# I want to change to $HOME instead, but only backup the files that are going
-	# to be affected by dync
-	cd $DOTFILES
-	copyAllToTarget $BACKUP_LOCATION
+	copyMatchingFilesToTarget $BACKUP_LOCATION </dev/null
 	zipBackup $BACKUP_LOCATION
 
 	if [[ $? -eq 0 ]]; then
@@ -148,14 +184,14 @@ isDotfilesEmpty() {
 listFiles() {
 	shift
 
-	if [[ -z "$( isDotfilesEmpty )" ]]; then
+	if [[ -z "$(isDotfilesEmpty)" ]]; then
 		printf "${IMPORTANT} No files currently tracked by dync ${NC}\n"
 		exit 0
 	fi
 
 	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
 	printf "${DIR}.config${NC}"
-	find $DOTFILES/.config -maxdepth 2 -type d -printf "  ${DIR}%P${NC}\n"
+	find $DOTFILES/.config -maxdepth 1 -type d -printf "  ${DIR}%P${NC}\n"
 	find $DOTFILES -maxdepth 2 -type f -printf "%P\n"
 	exit 0
 }
@@ -204,6 +240,8 @@ addFile() {
 
 	done
 
+	syncFiles
+
 	exit 0
 }
 
@@ -222,7 +260,7 @@ removeFile() {
 }
 
 ##
-# copys files from ./links to ./dotfiles
+# copies files from ./links to ./dotfiles
 ##
 syncFiles() {
 	if [[ $# -gt 1 ]]; then
@@ -263,7 +301,7 @@ bootstrap() {
 	BACKUP_SUCCESS_MESSAGE=""
 
 	if [[ $(ls -1A $HOME_TARGET | wc -l) ]]; then
-		backup
+		backupRework
 	fi
 
 	copyDotfiles
