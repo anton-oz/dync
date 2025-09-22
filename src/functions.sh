@@ -29,10 +29,10 @@ showVersion() {
 ##
 copyAllToTarget() {
 	if [[ -z $1 ]]; then
-		printf "$ERROR${IMPORTANT} must give a target ${NC}\n"
+		printf "${ERROR}${IMPORTANT} must give a target ${NC}\n"
 		exit 1
 	elif [[ ! -d $1 ]]; then
-		printf "$ERROR${IMPORTANT} target must be a directory ${NC}\n"
+		printf "${ERROR}${IMPORTANT} target must be a directory ${NC}\n"
 		printf "\ttarget = ${1}\n"
 		exit 1
 	fi
@@ -45,9 +45,8 @@ copyAllToTarget() {
 		# For every file in the reference directory, if it is not `.` or `..`
 		# sync to target directory.
 		filename=$(basename "$file")
-		echo $filename
 		[[ "$filename" == "." || "$filename" == ".." ]] && continue
-		rsync $RSYNCFLAGS -L "$filename" "$target_dir/"
+		rsync "$RSYNCFLAGS" -L "$filename" "$target_dir/"
 	done
 
 	##
@@ -60,33 +59,38 @@ copyAllToTarget() {
 	fi
 }
 
-# excludes .config
+##
+# echos absolute file paths that match between tracked files and
+# files in $HOME directory
 getMatchingFiles() {
-	local home_files
-	local tracked_files
+	local home_files tracked_files matching_files
 
-	home_files=$(find "$HOME_TARGET" -maxdepth 1 -not -path "$CONFIG_TARGET" -printf "%P\n" | sort)
-	tracked_files=$(ls --ignore=".config" -A $DOTFILES | sort)
+	home_files=$(find "$HOME_TARGET" \
+		-maxdepth 1 \
+		-not -path "$CONFIG_TARGET" \
+		-printf "%P\n" | sort)
+	tracked_files=$(ls --ignore=".config" -A "$DOTFILES" | sort)
 	
-	local matching_files
-	matching_files=$(comm -12 <(echo "$tracked_files") <(echo "$home_files") | \
+	matching_files=$(comm -12 \
+		<(echo "$tracked_files") \
+		<(echo "$home_files") | \
 		sed "s|^|$HOME_TARGET\/|"
 	)
+
+	local config_files tracked_config_files matching_config_files
+
+	config_files=$(find "$CONFIG_TARGET" -maxdepth 1 -printf "%P\n" | sort)
+	tracked_config_files=$(ls -A "$DOTFILES" | sort)
+	
+	local 
+	matching_config_files=$(comm -12 \
+		<(echo "$tracked_config_files") \
+		<(echo "$config_files") | \
+		sed "s|^|${HOME_TARGET}/|"
+	)
+
 	echo $matching_files
-
-
-	local config_dir_files
-	local tracked_config_dir_files
-	config_dir_files=$(find $CONFIG_TARGET -maxdepth 1 -printf "%P\n" | sort)
-	tracked_config_dir_files=$(ls -A $DOTFILES | sort)
-	
-	local matching_config_dir_files
-	matching_config_dir_files=$(\
-		comm -12 <(echo "$tracked_config_dir_files") <(echo "$config_dir_files") | \
-		sed "s|^|$HOME_TARGET\/|"
-	)
-
-	echo $matching_config_dir_files
+	echo $matching_config_files
 }
 
 ##
@@ -94,9 +98,12 @@ getMatchingFiles() {
 ##
 copyMatchingFilesToTarget() {
 	if [[ -z $1 ]] || [[ ! -d $1 ]]; then
-		printf "$ERROR${IMPORTANT} copyMatchesToTarget: arg not a directory ${NC}\n"
+		printf "%s %s\n" \
+			"${ERROR}${IMPORTANT}" \
+			"copyMatchesToTarget: arg not a directory ${NC}\n"
 		return 1
 	fi
+
 	cp "$(getMatchingFiles)" $1
 }
 
@@ -110,36 +117,37 @@ backup() {
 	# But, it will match .config
 
 	if [[ -z $( isDotfilesEmpty ) ]]; then
-		 echo no files in dync, aborting backup...
+		 printf "${IMPORTANT}no files in dync, aborting backup...${NC}\n"
 		 return 0
 	fi
 
 	if [[ ! -d $BACKUPS ]]; then
-		 echo "Root permissions only needed once to create backup dir"
-		 echo "and give dync permission to write to it"
-		 echo "If you want to verify, this message exists at $DYNC/src/functions.sh:73"
-		 sudo mkdir -p $BACKUPS
-		 sudo chown -R "$USER" $BACKUPS
-		 BACKUP_DIR="${DIR}$BACKUPS ${NC}"
-		 if [[ $SILENT = false ]]; then
-				 printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
-		 fi
+		printf "%s\n%s\n%s\n" \
+			"Root permissions only needed once to create backup directory"
+			"and give dync permission to write to that directory."
+			"line: ${LINENO}, function: ${FUNCNAME[0]}"
+		sudo mkdir -p "$BACKUPS"
+		sudo chown -R "$USER" "$BACKUPS"
+		BACKUP_DIR="${DIR}$BACKUPS ${NC}"
+		if [[ $SILENT = false ]]; then
+			 printf "${IMPORTANT} Created backup directory @ $BACKUP_DIR\n"
+		fi
 	fi
 	
-	BACKUP_NUM=$(($(ls -A $BACKUPS | wc -l)))
+	BACKUP_NUM=$(ls -A "$BACKUPS" 2>/dev/null | wc -l)
 	BACKUP_LOCATION=$(realpath "${BACKUPS}/${BACKUP_NUM}")
 
-	mkdir -p $BACKUP_LOCATION
+	mkdir -p "$BACKUP_LOCATION"
 
-	copyMatchingFilesToTarget $BACKUP_LOCATION </dev/null
-	zipBackup $BACKUP_LOCATION
+	copyMatchingFilesToTarget "$BACKUP_LOCATION" </dev/null
+	zipBackup "$BACKUP_LOCATION"
 
 	if [[ $? -eq 0 ]]; then
 		BACKUP_DIR="${DIR}$BACKUP_LOCATION ${NC}"
 		BACKUP_SUCCESS_MESSAGE=$(printf "${IMPORTANT} \$HOME backup @ $BACKUP_DIR\n")
 		return 0
 	else
-		printf "$ERROR${IMPORTANT} failed to backup files. aborting. ${NC}\n"
+		printf "${ERROR}${IMPORTANT} failed to backup files. aborting. ${NC}\n"
 		exit 1
 	fi
 }
@@ -198,8 +206,15 @@ listFiles() {
 	# Needs a refactor, this is fucked
 	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
 	printf "${DIR}.config${NC}"
-	find $DOTFILES/.config -maxdepth 1 -type d -printf "  ${DIR}%P${NC}\n"
-	find $DOTFILES -maxdepth 1 -not -path $DOTFILES/.config* -type d -printf "${DIR}%P${NC}\n"
+	find $DOTFILES/.config \ 
+		-maxdepth 1 \
+		-type d \ 
+		-printf "  ${DIR}%P${NC}\n"
+	find $DOTFILES \
+		-maxdepth 1 \
+		-not -path $DOTFILES/.config* \
+		-type d \
+		-printf "${DIR}%P${NC}\n"
 	find $DOTFILES -maxdepth 1 -type f -printf "%P\n"
 	exit 0
 }
@@ -208,7 +223,10 @@ addFile() {
 	shift
 
 	if [[ $# -eq 0 ]]; then
-		printf "$ERROR${IMPORTANT} add needs at least one file or directory to add ${NC}\n"
+		printf "%s %s %s\n" \
+			"${ERROR}${IMPORTANT}" \
+			"add needs at least one file or directory to add" \
+			"${NC}"
 		exit 1
 	fi
 
@@ -233,9 +251,13 @@ addFile() {
 		##
 		if [[ "$(basename $(dirname $(realpath $file)))" == ".config" ]]; then
 			if [[ $v_set == true ]]; then
-				ln -v -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+				ln -v -s \
+					$(realpath $file) \
+					$(realpath "$LINKS/.config/$(basename $file)")
 			else
-				ln -s $(realpath $file) $(realpath "$LINKS/.config/$(basename $file)")
+				ln -s \
+					$(realpath $file) \
+					$(realpath "$LINKS/.config/$(basename $file)")
 			fi
 		continue
 		fi
@@ -300,7 +322,7 @@ showStatus() {
 
 bootstrap() {
 	if [[ -z $( isDotfilesEmpty ) ]]; then
-		echo no files in dync, aborting bootstrap...
+		printf "${IMPORTANT}no files in dync, aborting bootstrap...${NC}\n"
 		return 0
 	fi
 
