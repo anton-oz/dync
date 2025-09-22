@@ -183,8 +183,10 @@ isDotfilesEmpty() {
 
 listFiles() {
 	shift
-	if [[ $1 == "backup" ]]; then
-		ls -lA $BACKUPS
+	if [[ $1 == "backups" ]] | [[ $1 == '-b' ]]; then
+		ls -lAh $BACKUPS | \
+			awk 'NR > 1 {$1=$2=$3=$4=$5=""; print $0}' | \
+			sed 's/^[[:space:]]*//'
 		return 0
 	fi
 

@@ -126,5 +126,6 @@ case $command in
 	restore) restoreToBackup $@ ;;
 	status) showStatus ;;
 	sync) syncFiles $@ ;;
+	help) showHelp ;;
 	*) echo "unknown command: $command" && showHelp && exit 1 ;; 
 esac
