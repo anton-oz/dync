@@ -40,11 +40,11 @@ DOTFILES="$DYNC/dotfiles"
 LINKS="$DYNC/links"
 SRC="$DYNC/src"
 
-# CONFIG_TARGET="$HOME/.config"
-# HOME_TARGET="$HOME"
+CONFIG_TARGET="$HOME/.config"
+HOME_TARGET="$HOME"
 
-CONFIG_TARGET="$DYNC/test_home/.config"
-HOME_TARGET="$DYNC/test_home"
+# CONFIG_TARGET="$DYNC/test_home/.config"
+# HOME_TARGET="$DYNC/test_home"
 
 ##
 # TODO:
