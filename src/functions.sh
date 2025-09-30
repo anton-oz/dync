@@ -274,6 +274,12 @@ addFile() {
 
 removeFile() {
 	shift
+	if [[ $# -eq 0 ]]; then
+		printf "${ERROR}"
+		printf "need at least one target file or dir to delete"
+		printf "${NC}\n"
+		exit 1
+	fi
 	for arg in $@; do
 		if [[ -f "$DYNC/links/$arg" ]]; then
 			rm -rf $DYNC/links/$arg
