@@ -122,7 +122,7 @@ case $command in
 	add) addFile $@ ;;
 	remove|rm) removeFile $@ ;;
 	boot) bootstrap $@ ;;
-	backup) backup ;;
+	backup) backup && echo backup success ;;
 	list) listFiles $@ ;;
 	restore) restoreToBackup $@ ;;
 	status) showStatus ;;

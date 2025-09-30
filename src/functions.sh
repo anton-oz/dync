@@ -112,9 +112,6 @@ copyMatchingFilesToTarget() {
 # backup matching files.
 ##
 backup() {
-	# this will compare files between dotfiles and home to something a match
-	# But, it will match .config
-
 	if [[ -z $( isDotfilesEmpty ) ]]; then
 		 printf "${IMPORTANT}no files in dync, aborting backup...${NC}\n"
 		 return 0
