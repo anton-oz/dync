@@ -191,24 +191,25 @@ isDotfilesEmpty() {
 
 listFiles() {
 	shift
-	if [[ $1 == "backups" ]] | [[ $1 == '-b' ]]; then
+	if [[ $1 == "backups" ]] || [[ $1 == '-b' ]]; then
+		printf "${IMPORTANT} Backups available to restore to: ${NC}\n"
 		ls -lAh $BACKUPS | \
 			awk 'NR > 1 {$1=$2=$3=$4=$5=""; print $0}' | \
 			sed 's/^[[:space:]]*//'
-		return 0
+		exit 0
 	fi
 
 	if [[ -z "$(isDotfilesEmpty)" ]]; then
 		printf "${IMPORTANT} No files currently tracked by dync ${NC}\n"
-		exit 0
+		return 0
 	fi
 
 	# Needs a refactor, this is fucked
 	printf "${IMPORTANT} Files currently tracked by dync: ${NC}\n"
 	printf "${DIR}.config${NC}"
-	find $DOTFILES/.config \ 
+	find $DOTFILES/.config \
 		-maxdepth 1 \
-		-type d \ 
+		-type d \
 		-printf "  ${DIR}%P${NC}\n"
 	find $DOTFILES \
 		-maxdepth 1 \
@@ -216,7 +217,7 @@ listFiles() {
 		-type d \
 		-printf "${DIR}%P${NC}\n"
 	find $DOTFILES -maxdepth 1 -type f -printf "%P\n"
-	exit 0
+	return 0
 }
 
 addFile() {
@@ -278,11 +279,12 @@ addFile() {
 removeFile() {
 	shift
 	for arg in $@; do
-		if [[ $(find "$DYNC/links/$arg") ]]; then
+		if [[ -f "$DYNC/links/$arg" ]]; then
 			rm -rf $DYNC/links/$arg
-		fi
-		if [[ $(find "$DYNC/dotfiles/$arg") ]]; then
+		elif [[ -f "$DYNC/dotfiles/$arg" ]]; then
 			rm -rf $DYNC/dotfiles/$arg
+		else
+			echo $arg is not tracked by dync
 		fi
 		shift
 	done

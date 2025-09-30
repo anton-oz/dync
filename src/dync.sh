@@ -40,10 +40,11 @@ DOTFILES="$DYNC/dotfiles"
 LINKS="$DYNC/links"
 SRC="$DYNC/src"
 
-CONFIG_TARGET="$HOME/.config"
-# CONFIG_TARGET="$DYNC/test_home/.config"
-HOME_TARGET="$HOME"
-# HOME_TARGET="$DYNC/test_home"
+# CONFIG_TARGET="$HOME/.config"
+# HOME_TARGET="$HOME"
+
+CONFIG_TARGET="$DYNC/test_home/.config"
+HOME_TARGET="$DYNC/test_home"
 
 ##
 # TODO:
@@ -127,5 +128,5 @@ case $command in
 	status) showStatus ;;
 	sync) syncFiles $@ ;;
 	help) showHelp ;;
-	*) echo "unknown command: $command" && showHelp && exit 1 ;; 
+	*) echo "unknown command: $command" && showHelp && exit 1 ;;
 esac
