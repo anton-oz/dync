@@ -280,10 +280,9 @@ removeFile() {
 	for arg in $@; do
 		if [[ -f "$DYNC/links/$arg" ]]; then
 			rm -rf $DYNC/links/$arg
-		elif [[ -f "$DYNC/dotfiles/$arg" ]]; then
 			rm -rf $DYNC/dotfiles/$arg
 		else
-			echo $arg is not tracked by dync
+			echo $arg not found in dync
 		fi
 		shift
 	done
