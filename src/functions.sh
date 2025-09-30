@@ -167,7 +167,7 @@ restoreToBackup() {
 	# - unzip and rsync to home_target
 	shift
 	if [[ -z $1 ]] || [[ $# -gt 1 ]]; then
-		printf "$ERROR restoreToBackup: need a backup number to restore to\n"
+		printf "$ERROR need a backup number to restore to\n"
 		exit 1
 	fi
 
