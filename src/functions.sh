@@ -220,12 +220,10 @@ listFiles() {
 
 addFile() {
 	shift
-
 	if [[ $# -eq 0 ]]; then
-		printf "%s %s %s\n" \
-			"${ERROR}${IMPORTANT}" \
-			"add needs at least one file or directory to add" \
-			"${NC}"
+		printf "${ERROR}${IMPORTANT}"
+		printf "add needs at least one file or directory to add "
+		printf "${NC}\n"
 		exit 1
 	fi
 
