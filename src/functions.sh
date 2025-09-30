@@ -82,7 +82,6 @@ getMatchingFiles() {
 	config_files=$(find "$CONFIG_TARGET" -maxdepth 1 -printf "%P\n" | sort)
 	tracked_config_files=$(ls -A "$DOTFILES" | sort)
 	
-	local 
 	matching_config_files=$(comm -12 \
 		<(echo "$tracked_config_files") \
 		<(echo "$config_files") | \
@@ -170,7 +169,6 @@ restoreToBackup() {
 	# - get a arg for which backup to choose
 	# - unzip and rsync to home_target
 	shift
-	local backup
 	if [[ -z $1 ]] || [[ $# -gt 1 ]]; then
 		printf "$ERROR restoreToBackup: need a backup number to restore to\n"
 		exit 1
