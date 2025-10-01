@@ -1,0 +1,13 @@
+[mgr]
+# show dotfiles by default
+# show_hidden = false
+
+[opener]
+edit = [
+	{ run = '${EDITOR:-nvim} "$@"', desc = "$EDITOR", block = true, for = 'unix' }
+]
+
+[plugin]
+prepend_previewers = [
+ { mime = "application/gzip", run = "plugins/archive.sh $1" },
+]

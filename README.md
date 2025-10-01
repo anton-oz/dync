@@ -1,8 +1,6 @@
-# dync
+# Personal Config Branch
 
-sync dotfiles across machines
-
-> **Note:** dync is only compatible with unix based systems
+My personal zsh setup
 
 ## Quick Install
 
