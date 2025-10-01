@@ -75,6 +75,9 @@ esac
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+for f in ~/.config/zsh-custom/*.zsh; do
+  source "$f"
+done
 
 # calls function to clean path, cuz cuda is weird and keeps adding same
 # entry to path.
