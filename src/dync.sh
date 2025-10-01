@@ -87,7 +87,8 @@ if [[ $# -gt 0 ]]; then
 		-V|--version) showVersion ;;
 		# NOTE: flags here
 		-*) 
-			while getopts ":yvs" opt; do
+			options=":yvsg"
+			while getopts $options opt; do
 				case $opt in
 					v)
 						if $s_set; then
@@ -103,6 +104,10 @@ if [[ $# -gt 0 ]]; then
 						flags_passed=true
 						s_set=true
 						SILENT=true ;;
+					g)
+						shift
+						git $@
+						exit 0 ;;
 					\?) printf "unknown option: $1 \nuse dync --help to display options\n"; exit 1 ;;
 				esac
 			done 
