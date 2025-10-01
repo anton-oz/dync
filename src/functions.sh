@@ -7,6 +7,8 @@ showHelp() {
 	printf "    -V,--version show dync version\n"
 	printf "    -v		 verbose output\n"
 	printf "    -s		 silence all output (does not silence errors)\n"
+	printf "    -g		 this command will overide all others and allow\n"
+	printf "					 you to manipulate the dync git repo directly"
 	printf "  commands:\n"
 	printf "    add		 add a file to dync\n"
 	printf "    rm, remove	 remove a file from dync\n"
